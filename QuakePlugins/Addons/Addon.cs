@@ -1,0 +1,33 @@
+﻿using NLua;
+using QuakeEnhancedServerAnnouncer;
+using QuakePlugins.LuaScripting;
+using System;
+using System.IO;
+
+namespace QuakeAddons.Addons
+{
+    public class Addon
+    {
+        private string _path;
+        private LuaEnvironment _lua;
+
+        internal Addon(string path)
+        {
+            _path = path;
+        }
+
+        internal void Load()
+        {
+            _lua = new LuaEnvironment();
+            _lua.Initialize();
+            _lua.LuaException += Lua_Exception;
+
+            _lua.ExecuteFile(Path.Combine(_path, "main.lua"));
+        }
+
+        private void Lua_Exception(object sender, Exception e)
+        {
+            Quake.PrintConsole($"Lua Exception: {e}\n",System.Drawing.Color.Red);
+        }
+    }
+}
