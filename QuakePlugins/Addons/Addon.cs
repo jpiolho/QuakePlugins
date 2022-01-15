@@ -4,7 +4,7 @@ using QuakePlugins.LuaScripting;
 using System;
 using System.IO;
 
-namespace QuakeAddons.Addons
+namespace QuakePlugins.Addons
 {
     public class Addon
     {

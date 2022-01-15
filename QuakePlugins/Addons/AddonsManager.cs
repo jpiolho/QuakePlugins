@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace QuakeAddons.Addons
+namespace QuakePlugins.Addons
 {
     public class AddonsManager
     {

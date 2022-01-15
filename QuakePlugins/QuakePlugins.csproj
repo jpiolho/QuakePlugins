@@ -25,4 +25,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="API\CSharp\" />
+    <Folder Include="LuaScripting\API\" />
+  </ItemGroup>
+
 </Project>

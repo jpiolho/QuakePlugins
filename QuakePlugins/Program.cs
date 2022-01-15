@@ -1,4 +1,4 @@
-﻿using QuakeAddons.Addons;
+﻿using QuakePlugins.Addons;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -366,7 +366,7 @@ namespace QuakeEnhancedServerAnnouncer
             if (processes.Length > 1)
                 throw new Exception("Too many processes found");
 
-            DllInjector.Inject(processes[0], Path.Combine(AppContext.BaseDirectory, "QuakeAddonsHook.dll"),"dotnet_initialize");
+            DllInjector.Inject(processes[0], Path.Combine(AppContext.BaseDirectory, "QuakePluginsHook.dll"),"dotnet_initialize");
 
             Console.WriteLine("Injected! Enjoy");
         }

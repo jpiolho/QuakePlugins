@@ -90,7 +90,7 @@ void* get_dotnet_function(std::wstring functionName,std::wstring functionNamespa
     //typedef void (CORECLR_DELEGATE_CALLTYPE* initialize_fn)();
     void* functionPtr = nullptr;
     int rc = load_assembly_fptr(
-        append_path(dll_folder,L"QuakeAddons.dll").c_str(),
+        append_path(dll_folder,L"QuakePlugins.dll").c_str(),
         functionNamespace.c_str(),
         functionName.c_str(),
         functionDelegate.c_str(), /*delegate_type_name*/
@@ -122,43 +122,43 @@ int dotnet_initialize(char* dllPath) {
     if(!get_function_pointers())
         return -1;
 
-    if(get_dotnet_load_assembly(append_path(dll_folder,L"QuakeAddons.runtimeconfig.json")) == nullptr)
+    if(get_dotnet_load_assembly(append_path(dll_folder,L"QuakePlugins.runtimeconfig.json")) == nullptr)
         return -2;
 
     
     Quake_PrintConsole("[ServerAnnouncer] Getting dotnet functions...\n", 0xFF00FF00);
 
     QuakeEnhancedServerAnnouncer_ReceiveServerJson = (QuakeEnhancedServerAnnouncer_ReceiveServerJson_fn)get_dotnet_function(L"ReceiveServerJson",
-        L"QuakeEnhancedServerAnnouncer.Program, QuakeAddons",
-        L"QuakeEnhancedServerAnnouncer.Program+ReceiveServerJsonDelegate, QuakeAddons"
+        L"QuakeEnhancedServerAnnouncer.Program, QuakePlugins",
+        L"QuakeEnhancedServerAnnouncer.Program+ReceiveServerJsonDelegate, QuakePlugins"
     );
     if (QuakeEnhancedServerAnnouncer_ReceiveServerJson == nullptr)
         return -3;
 
     auto setupInterop = get_dotnet_function(L"SetupInterop",
-        L"QuakeEnhancedServerAnnouncer.Quake, QuakeAddons",
-        L"QuakeEnhancedServerAnnouncer.Quake+SetupInteropDelegate, QuakeAddons"
+        L"QuakeEnhancedServerAnnouncer.Quake, QuakePlugins",
+        L"QuakeEnhancedServerAnnouncer.Quake+SetupInteropDelegate, QuakePlugins"
     );
     if (setupInterop == nullptr)
         return -4;
 
     QuakeEnhancedServerAnnouncer_OnServerBrowserIdle = (QuakeEnhancedServerAnnouncer_OnServerBrowserIdle_fn)get_dotnet_function(L"OnServerBrowserIdle",
-        L"QuakeEnhancedServerAnnouncer.Program, QuakeAddons",
-        L"QuakeEnhancedServerAnnouncer.Program+OnServerBrowserIdleDelegate, QuakeAddons"
+        L"QuakeEnhancedServerAnnouncer.Program, QuakePlugins",
+        L"QuakeEnhancedServerAnnouncer.Program+OnServerBrowserIdleDelegate, QuakePlugins"
     );
     if (QuakeEnhancedServerAnnouncer_OnServerBrowserIdle == nullptr)
         return -5;
 
     QuakeEnhancedServerAnnouncer_MainInjected = (QuakeEnhancedServerAnnouncer_MainInjected_fn)get_dotnet_function(L"MainInjected",
-        L"QuakeEnhancedServerAnnouncer.Program, QuakeAddons",
-        L"QuakeEnhancedServerAnnouncer.Program+MainInjectedDelegate, QuakeAddons"
+        L"QuakeEnhancedServerAnnouncer.Program, QuakePlugins",
+        L"QuakeEnhancedServerAnnouncer.Program+MainInjectedDelegate, QuakePlugins"
     );
     if (QuakeEnhancedServerAnnouncer_MainInjected == nullptr)
         return -6;
 
     QuakeEnhancedServerAnnouncer_OnLobbyRender = (QuakeEnhancedServerAnnouncer_OnLobbyRender_fn)get_dotnet_function(L"OnLobbyRender",
-        L"QuakeEnhancedServerAnnouncer.Program, QuakeAddons",
-        L"QuakeEnhancedServerAnnouncer.Program+OnLobbyRenderDelegate, QuakeAddons"
+        L"QuakeEnhancedServerAnnouncer.Program, QuakePlugins",
+        L"QuakeEnhancedServerAnnouncer.Program+OnLobbyRenderDelegate, QuakePlugins"
     );
     if (QuakeEnhancedServerAnnouncer_OnLobbyRender == nullptr)
         return -7;

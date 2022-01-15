@@ -1,4 +1,4 @@
-﻿namespace QuakeAddons.Addons
+﻿namespace QuakePlugins.Addons
 {
     public class AddonInfo
     {
