@@ -19,8 +19,8 @@ QuakeEnhancedServerAnnouncer_MainInjected_fn QuakeEnhancedServerAnnouncer_MainIn
 std::wstring dll_folder;
 
 
-#define ConsoleColorRegular 0xFFde9414
-#define ConsoleColorError 0xFF2330de
+#define ConsoleColorRegular 0xFFde9414 // ABGR
+#define ConsoleColorError 0xFF2330de // ABGR
 
 
 
