@@ -1,5 +1,5 @@
 ﻿using NLua;
-using QuakeEnhancedServerAnnouncer;
+using QuakePlugins;
 using QuakePlugins.LuaScripting;
 using System;
 using System.IO;

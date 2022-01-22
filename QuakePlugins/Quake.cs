@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace QuakeEnhancedServerAnnouncer
+namespace QuakePlugins
 {
     public static class Quake
     {

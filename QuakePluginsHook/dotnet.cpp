@@ -13,7 +13,7 @@ hostfxr_get_runtime_delegate_fn get_delegate_fptr;
 hostfxr_close_fn close_fptr;
 load_assembly_and_get_function_pointer_fn load_assembly_fptr;
 
-QuakeEnhancedServerAnnouncer_MainInjected_fn QuakeEnhancedServerAnnouncer_MainInjected;
+QuakePlugins_MainInjected_fn QuakePlugins_MainInjected;
 
 
 std::wstring dll_folder;
@@ -143,18 +143,18 @@ int dotnet_initialize(char* dllPath) {
     
     PrintConsole("Getting dotnet functions...");
 
-    QuakeEnhancedServerAnnouncer_MainInjected = (QuakeEnhancedServerAnnouncer_MainInjected_fn)get_dotnet_function(L"MainInjected",
-        L"QuakeEnhancedServerAnnouncer.Program, QuakePlugins",
-        L"QuakeEnhancedServerAnnouncer.Program+MainInjectedDelegate, QuakePlugins"
+    QuakePlugins_MainInjected = (QuakePlugins_MainInjected_fn)get_dotnet_function(L"MainInjected",
+        L"QuakePlugins.Program, QuakePlugins",
+        L"QuakePlugins.Program+MainInjectedDelegate, QuakePlugins"
     );
-    if (QuakeEnhancedServerAnnouncer_MainInjected == nullptr) {
+    if (QuakePlugins_MainInjected == nullptr) {
         PrintConsoleError("Failed to find dotnet MainInjected function");
         return -6;
     }
 
     PrintConsole("Calling dotnet main...");
 
-    QuakeEnhancedServerAnnouncer_MainInjected();
+    QuakePlugins_MainInjected();
 
     PrintConsole("Ready");
 

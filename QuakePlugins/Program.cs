@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace QuakeEnhancedServerAnnouncer
+namespace QuakePlugins
 {
     public static class Program
     {

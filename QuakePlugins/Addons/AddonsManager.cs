@@ -1,4 +1,4 @@
-﻿using QuakeEnhancedServerAnnouncer;
+﻿using QuakePlugins;
 using System.Collections.Generic;
 using System.IO;
 

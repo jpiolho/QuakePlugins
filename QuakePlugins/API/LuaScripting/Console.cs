@@ -1,4 +1,4 @@
-﻿using QuakeEnhancedServerAnnouncer;
+﻿using QuakePlugins;
 
 namespace QuakePlugins.API.LuaScripting
 {
