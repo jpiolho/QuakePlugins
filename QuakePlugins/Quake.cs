@@ -1,22 +1,12 @@
-﻿using QuakePlugins;
-using QuakePlugins.Core;
+﻿using QuakePlugins.Core;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
-using Reloaded.Hooks.Definitions.Structs;
 using Reloaded.Hooks.Definitions.X64;
 using Reloaded.Hooks.Tools;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Net.Http;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using static Reloaded.Hooks.Definitions.X64.FunctionAttribute;
-using Void = Reloaded.Hooks.Definitions.Structs.Void;
 
 namespace QuakeEnhancedServerAnnouncer
 {
@@ -108,8 +98,8 @@ namespace QuakeEnhancedServerAnnouncer
 
         private static unsafe void MyHook2()
         {
-            
-            
+
+
             IntPtr function = new IntPtr(*(int*)0x1418a2a40);
 
             int nameIndex = *(int*)(function + 16);
@@ -120,7 +110,7 @@ namespace QuakeEnhancedServerAnnouncer
             string functionName = Marshal.PtrToStringAnsi(new IntPtr(name));
 
             //Quake.PrintConsole("QC Leave Function: " + functionName + "\n");
-            
+
             ;
             //Quake.PrintConsole("QC Leave hooked\n");
         }
@@ -195,7 +185,7 @@ namespace QuakeEnhancedServerAnnouncer
             Adapters.StartServerGame = Marshal.GetDelegateForFunctionPointer<Adapters.StartServerGameFn>(adapters.StartServerGame);
             Adapters.ChangeGame = Marshal.GetDelegateForFunctionPointer<Adapters.ChangeGameFn>(adapters.ChangeGame);
 
-            
+
 
         }
 

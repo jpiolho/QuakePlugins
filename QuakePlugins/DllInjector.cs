@@ -92,7 +92,7 @@ namespace QuakeEnhancedServerAnnouncer
             if (module == IntPtr.Zero)
             {
                 var err = Interop.GetLastError();
-                throw new Exception($"Failed to load {dllName} module");
+                throw new Exception($"Failed to load {dllName} module (Error: {err})");
             }
 
             // geting the handle of the process - with required privileges
