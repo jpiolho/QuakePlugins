@@ -29,5 +29,12 @@ namespace QuakePlugins.Addons
         {
             Quake.PrintConsole($"Lua Exception: {e}\n",System.Drawing.Color.Red);
         }
+
+
+        internal void RaiseQCHook(string name)
+        {
+            _lua.RaiseQCHook(name);
+            // TODO: C# Raise QC Hook
+        }
     }
 }

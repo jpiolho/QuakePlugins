@@ -58,9 +58,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>nethost.lib;distorm_x64.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>nethost.lib;user32.lib</AdditionalDependencies>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
@@ -78,9 +79,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>nethost.lib;distorm_x64.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>nethost.lib;user32.lib</AdditionalDependencies>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
@@ -98,15 +100,10 @@
     <ClCompile Include="adapters.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="dotnet.cpp" />
-    <ClCompile Include="external\NtHookEngine.cpp" />
-    <ClCompile Include="hooks.cpp" />
     <ClCompile Include="quake.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="adapters.hpp" />
     <ClInclude Include="dotnet.hpp" />
-    <ClInclude Include="external\NtHookEngine.hpp" />
-    <ClInclude Include="hooks.hpp" />
     <ClInclude Include="quake.hpp" />
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,7 @@ namespace QuakePlugins.Addons
     {
         private List<Addon> _addons;
 
+        public IReadOnlyList<Addon> Addons => _addons.AsReadOnly();
 
         internal void Start()
         {
