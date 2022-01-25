@@ -4,6 +4,7 @@ using Reloaded.Hooks.Definitions.X64;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ namespace QuakePlugins.Core
 {
     internal class QEngine
     {
+        private static unsafe float* _pr_globals;
+
         public static void InitializeQEngine()
         {
             var hooks = ReloadedHooks.Instance;
@@ -20,8 +23,54 @@ namespace QuakePlugins.Core
             _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(0x1400da2c0, out _);
             _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dac50, out _);
             _cvarGet = hooks.CreateWrapper<FnCvarGet>(0x1400d9250, out _);
+
+            unsafe
+            {
+                _pr_globals = *(float**)0x1418a2a00;
+            }
         }
 
+        public enum QCValueOffset
+        {
+            Return = 1,
+            Parameter0 = 4,
+            Parameter1 = 7,
+            Parameter2 = 10,
+            Parameter3 = 13,
+            Parameter4 = 16,
+            Parameter5 = 19,
+            Parameter6 = 22,
+            Parameter7 = 25
+        }
+
+        private int QCGetIntValue(QCValueOffset offset)
+        {
+            unsafe 
+            { 
+                return *(int*)&_pr_globals[(int)offset];
+            }
+        }
+
+        private float QCGetFloatValue(QCValueOffset offset)
+        {
+            unsafe
+            {
+                return _pr_globals[(int)offset];
+            }
+        }
+
+        private Vector3 QCGetVectorValue(QCValueOffset offset)
+        {
+            unsafe
+            {
+                float x = _pr_globals[(int)offset];
+                float y = _pr_globals[(int)offset+1];
+                float z = _pr_globals[(int)offset+2];
+                return new Vector3(x, y, z);
+            }
+        }
+
+        
 
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct KexArray_t
