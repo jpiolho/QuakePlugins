@@ -23,6 +23,8 @@ namespace QuakePlugins.Core
             _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(0x1400da2c0, out _);
             _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dac50, out _);
             _cvarGet = hooks.CreateWrapper<FnCvarGet>(0x1400d9250, out _);
+            _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c2550, out _);
+            _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c25c0, out _);
 
             unsafe
             {
@@ -43,7 +45,7 @@ namespace QuakePlugins.Core
             Parameter7 = 25
         }
 
-        private int QCGetIntValue(QCValueOffset offset)
+        public static int QCGetIntValue(QCValueOffset offset)
         {
             unsafe 
             { 
@@ -51,7 +53,7 @@ namespace QuakePlugins.Core
             }
         }
 
-        private float QCGetFloatValue(QCValueOffset offset)
+        public static float QCGetFloatValue(QCValueOffset offset)
         {
             unsafe
             {
@@ -59,7 +61,7 @@ namespace QuakePlugins.Core
             }
         }
 
-        private Vector3 QCGetVectorValue(QCValueOffset offset)
+        public static Vector3 QCGetVectorValue(QCValueOffset offset)
         {
             unsafe
             {
@@ -70,7 +72,38 @@ namespace QuakePlugins.Core
             }
         }
 
-        
+        public static string QCGetStringValue(QCValueOffset offset)
+        {
+            return StringGet(QCGetIntValue(offset));
+        }
+
+        public static void QCSetIntValue(QCValueOffset offset, int value)
+        {
+            unsafe
+            {
+                *(int*)&_pr_globals[(int)offset] = value;
+            }
+        }
+        public static void QCSetFloatValue(QCValueOffset offset, float value)
+        {
+            unsafe
+            {
+                _pr_globals[(int)offset] = value;
+            }
+        }
+        public static void QCSetStringValue(QCValueOffset offset,string value)
+        {
+            QCSetIntValue(offset, StringCreate(value));
+        }
+        public static void QCSetVectorValue(QCValueOffset offset,Vector3 value)
+        {
+            unsafe
+            {
+                _pr_globals[(int)offset] = value.X;
+                _pr_globals[(int)offset + 1] = value.Y;
+                _pr_globals[(int)offset + 2] = value.Z;
+            }
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct KexArray_t
@@ -186,6 +219,32 @@ namespace QuakePlugins.Core
             finally
             {
                 Marshal.FreeHGlobal(textPointer);
+            }
+        }
+
+
+        [Function(CallingConventions.Microsoft)]
+        private struct FnStringGet { public FuncPtr<int,int, IntPtr> Value; }
+        private static FnStringGet _stringGet;
+        public static string StringGet(int index)
+        {
+            unsafe
+            {
+                IntPtr str = _stringGet.Value.Invoke(0,index);
+                return Marshal.PtrToStringAnsi(str);
+            }
+        }
+
+        [Function(CallingConventions.Microsoft)]
+        private struct FnStringCreate { public FuncPtr<int, IntPtr, int> Value; }
+        private static FnStringCreate _stringCreate;
+        public static int StringCreate(string str)
+        {
+            var ptr = Marshal.StringToHGlobalAnsi(str);
+            
+            unsafe
+            {
+                return _stringCreate.Value.Invoke(0, ptr);
             }
         }
     }
