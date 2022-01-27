@@ -15,9 +15,16 @@ namespace QuakePlugins.Core
     internal class QEngine
     {
         private static unsafe float* _pr_globals;
+        private static IntPtr _pr_builtin;
+        private static unsafe int* _pr_argc;
+
+        private static byte[] _stack;
+        private static int _qc_argcbackup;
 
         public static void InitializeQEngine()
         {
+            _stack = new byte[112];
+
             var hooks = ReloadedHooks.Instance;
             _consolePrint = hooks.CreateWrapper<FnConsolePrint>(0x1400d69a0,out _);
             _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(0x1400da2c0, out _);
@@ -26,9 +33,12 @@ namespace QuakePlugins.Core
             _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c2550, out _);
             _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c25c0, out _);
 
+
             unsafe
             {
                 _pr_globals = *(float**)0x1418a2a00;
+                _pr_builtin = new IntPtr(0x1409a5a80);
+                _pr_argc = (int*)0x1418a2a38;
             }
         }
 
@@ -102,6 +112,42 @@ namespace QuakePlugins.Core
                 _pr_globals[(int)offset] = value.X;
                 _pr_globals[(int)offset + 1] = value.Y;
                 _pr_globals[(int)offset + 2] = value.Z;
+            }
+        }
+
+        private struct FnBuiltIn { public FuncPtr<int,Void> Value; }
+        public static void BuiltinCall(int index)
+        {
+            unsafe
+            {
+                var hooks = ReloadedHooks.Instance;
+                hooks.CreateWrapper<FnBuiltIn>(*(long*)(_pr_builtin.ToInt64() + (index * sizeof(void*))),out _).Value.Invoke(0);
+            }
+        }
+
+        public static void QCRegistersBackup()
+        {
+            unsafe
+            {
+                _qc_argcbackup = *_pr_argc;
+                Marshal.Copy(new IntPtr(_pr_globals), _stack, 0, 28 * sizeof(int));
+            }
+        }
+
+        public static void QCRegistersRestore()
+        {
+            unsafe
+            {
+                *_pr_argc = _qc_argcbackup;
+                Marshal.Copy(_stack, 0, new IntPtr(_pr_globals), 28 * sizeof(int));
+            }
+        }
+
+        public static void QCSetArgumentCount(int count)
+        {
+            unsafe
+            {
+                *_pr_argc = count;
             }
         }
 
@@ -236,15 +282,14 @@ namespace QuakePlugins.Core
         }
 
         [Function(CallingConventions.Microsoft)]
-        private struct FnStringCreate { public FuncPtr<int, IntPtr, int> Value; }
+        private struct FnStringCreate { public FuncPtr<IntPtr, IntPtr, int> Value; }
         private static FnStringCreate _stringCreate;
         public static int StringCreate(string str)
         {
             var ptr = Marshal.StringToHGlobalAnsi(str);
-            
             unsafe
             {
-                return _stringCreate.Value.Invoke(0, ptr);
+                return _stringCreate.Value.Invoke(ptr+str.Length+1, ptr);
             }
         }
     }

@@ -58,6 +58,11 @@ namespace QuakePlugins.LuaScripting
             _state["QC.SetString"] = (Action<QC.ValueLocation,string>)QC.SetString;
             _state["QC.SetVector"] = (Action<QC.ValueLocation,Vector3>)QC.SetVector;
 
+            // Builtins
+            _state.DoString("Builtins = {}");
+            _state["Builtins.BPrint"] = (Action<string>)Builtins.BPrint;
+            _state["Builtins.Stuffcmd"] = (Action<int,string>)Builtins.Stuffcmd;
+
             _state.DoString("Hooks = {}");
             _state["Hooks.RegisterQC"] = (Action<string, LuaFunction>)_hooks.RegisterQC;
         }
