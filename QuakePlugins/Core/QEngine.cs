@@ -15,7 +15,7 @@ namespace QuakePlugins.Core
 {
     internal class QEngine
     {
-        private static unsafe float* _pr_globals;
+        private static IntPtr _pr_globals;
         private static IntPtr _pr_builtin;
         private static unsafe int* _pr_argc;
         private static unsafe EngineEdict** _sv_edicts;
@@ -39,7 +39,7 @@ namespace QuakePlugins.Core
 
             unsafe
             {
-                _pr_globals = *(float**)0x1418a2a00;
+                _pr_globals = new IntPtr(0x1418a2a00);
                 _pr_builtin = new IntPtr(0x1409a5a80);
                 _pr_argc = (int*)0x1418a2a38;
                 _sv_edicts = (EngineEdict**)0x1418beeb0;
@@ -63,8 +63,8 @@ namespace QuakePlugins.Core
         public static int QCGetIntValue(QCValueOffset offset)
         {
             unsafe 
-            { 
-                return *(int*)&_pr_globals[(int)offset];
+            {
+                return (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset];
             }
         }
 
@@ -72,7 +72,7 @@ namespace QuakePlugins.Core
         {
             unsafe
             {
-                return _pr_globals[(int)offset];
+                return (float)(*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset];
             }
         }
 
@@ -80,9 +80,9 @@ namespace QuakePlugins.Core
         {
             unsafe
             {
-                float x = _pr_globals[(int)offset];
-                float y = _pr_globals[(int)offset+1];
-                float z = _pr_globals[(int)offset+2];
+                float x = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset];
+                float y = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset+1];
+                float z = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset+2];
                 return new Vector3(x, y, z);
             }
         }
@@ -101,14 +101,14 @@ namespace QuakePlugins.Core
         {
             unsafe
             {
-                *(int*)&_pr_globals[(int)offset] = value;
+                (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset] = value;
             }
         }
         public static void QCSetFloatValue(QCValueOffset offset, float value)
         {
             unsafe
             {
-                _pr_globals[(int)offset] = value;
+                *(float*)&(*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset] = value;
             }
         }
         public static void QCSetStringValue(QCValueOffset offset,string value)
@@ -119,9 +119,9 @@ namespace QuakePlugins.Core
         {
             unsafe
             {
-                _pr_globals[(int)offset] = value.X;
-                _pr_globals[(int)offset + 1] = value.Y;
-                _pr_globals[(int)offset + 2] = value.Z;
+                *(float*)&(*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset] = value.X;
+                *(float*)&(*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset + 1] = value.Y;
+                *(float*)&(*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset + 2] = value.Z;
             }
         }
         public static unsafe void QCSetEdictValue(QCValueOffset offset, EngineEdict* edict)
@@ -144,7 +144,7 @@ namespace QuakePlugins.Core
             unsafe
             {
                 _qc_argcbackup = *_pr_argc;
-                Marshal.Copy(new IntPtr(_pr_globals), _stack, 0, 28 * sizeof(int));
+                Marshal.Copy(new IntPtr(*(EngineGlobalVars**)_pr_globals.ToPointer()), _stack, 0, 28 * sizeof(int));
             }
         }
 
@@ -153,7 +153,7 @@ namespace QuakePlugins.Core
             unsafe
             {
                 *_pr_argc = _qc_argcbackup;
-                Marshal.Copy(_stack, 0, new IntPtr(_pr_globals), 28 * sizeof(int));
+                Marshal.Copy(_stack, 0, new IntPtr(*(EngineGlobalVars**)_pr_globals.ToPointer()), 28 * sizeof(int));
             }
         }
 
@@ -290,6 +290,9 @@ namespace QuakePlugins.Core
         {
             unsafe
             {
+                if (index == 0)
+                    return null;
+
                 IntPtr str = _stringGet.Value.Invoke(0,index);
                 return Marshal.PtrToStringAnsi(str);
             }

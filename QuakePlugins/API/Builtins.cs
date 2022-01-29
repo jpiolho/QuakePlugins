@@ -75,6 +75,8 @@ namespace QuakePlugins.API
         public static void Remove(Edict entity) => CallBuiltIn(15);
         public static void TraceLine(Vector3 v1, Vector3 v2, float nomonsters, Edict forent) => CallBuiltIn(16, v1, v2, nomonsters, forent);
         public static Edict CheckClient() => CallBuiltIn<Edict>(17);
+        public static string PrecacheSound(string snd) => CallBuiltIn<string>(19, snd);
+        public static string PrecacheModel(string model) => CallBuiltIn<string>(20, model);
         public static void Stuffcmd(Edict entity, string command) => CallBuiltIn(21, entity, command);
         public static Edict FindRadius(Vector3 origin, float radius) => CallBuiltIn<Edict>(22, origin, radius);
         public static void BPrint(string text) => CallBuiltIn(23, text);
@@ -93,6 +95,7 @@ namespace QuakePlugins.API
 
         public static void CvarSet(string cvar, string value) => CallBuiltIn(72, cvar, value);
 
+        public static void LocalSound(Edict entity, string snd) => CallBuiltIn(80, entity, snd);
         public static void DrawPoint(Vector3 point, float colormap, float lifetime, bool depthtest) => CallBuiltIn(81, point, colormap, lifetime, depthtest);
         public static void DrawLine(Vector3 start, Vector3 end, float colormap, float lifetime, bool depthtest) => CallBuiltIn(82, start,end, colormap, lifetime, depthtest);
         public static void DrawArrow(Vector3 start, Vector3 end, float colormap, float size, float lifetime, bool depthtest) => CallBuiltIn(83, start,end, colormap, size, lifetime, depthtest);

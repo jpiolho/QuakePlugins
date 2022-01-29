@@ -23,6 +23,7 @@ namespace QuakePlugins.LuaScripting
 
         public void Initialize()
         {
+#pragma warning disable CS8974 // Converting method group to non-delegate type
             _state = new Lua();
             _state.HookException += LuaState_OnHookException;
 
@@ -62,17 +63,30 @@ namespace QuakePlugins.LuaScripting
 
             // Builtins
             _state.DoString("Builtins = {}");
-            _state["Builtins.Makevectors"] = (Action<Vector3>)Builtins.Makevectors;
-            _state["Builtins.SetOrigin"] = (Action<Edict,Vector3>)Builtins.SetOrigin;
-            _state["Builtins.SetModel"] = (Action<Edict,string>)Builtins.SetModel;
-            _state["Builtins.BPrint"] = (Action<string>)Builtins.BPrint;
-            _state["Builtins.SPrint"] = (Action<Edict,string>)Builtins.SPrint;
-            _state["Builtins.Stuffcmd"] = (Action<Edict,string>)Builtins.Stuffcmd;
-            _state["Builtins.Localcmd"] = (Action<string>)Builtins.Localcmd;
-            _state["Builtins.Spawn"] = (Func<Edict>)Builtins.Spawn;
+            _state["Builtins.Makevectors"] = Builtins.Makevectors;
+            _state["Builtins.SetOrigin"] = Builtins.SetOrigin;
+            _state["Builtins.SetModel"] = Builtins.SetModel;
+            _state["Builtins.BPrint"] = Builtins.BPrint;
+            _state["Builtins.SPrint"] = Builtins.SPrint;
+            _state["Builtins.Stuffcmd"] = Builtins.Stuffcmd;
+            _state["Builtins.Localcmd"] = Builtins.Localcmd;
+            _state["Builtins.Spawn"] = Builtins.Spawn;
+            _state["Builtins.LocalSound"] = Builtins.LocalSound;
+            _state["Builtins.DrawPoint"] = Builtins.DrawPoint;
+            _state["Builtins.DrawLine"] = Builtins.DrawLine;
+            _state["Builtins.DrawArrow"] = Builtins.DrawArrow;
+            _state["Builtins.DrawRay"] = Builtins.DrawRay;
+            _state["Builtins.DrawCircle"] = Builtins.DrawCircle;
+            _state["Builtins.DrawBounds"] = Builtins.DrawBounds;
+            _state["Builtins.DrawWorldText"] = Builtins.DrawWorldText;
+            _state["Builtins.DrawSphere"] = Builtins.DrawSphere;
+            _state["Builtins.DrawCylinder"] = Builtins.DrawCylinder;
+            _state["Builtins.PrecacheSound"] = Builtins.PrecacheSound;
+            _state["Builtins.PrecacheModel"] = Builtins.PrecacheModel;
 
             _state.DoString("Hooks = {}");
             _state["Hooks.RegisterQC"] = (Action<string, LuaFunction>)_hooks.RegisterQC;
+#pragma warning restore CS8974 // Converting method group to non-delegate type
         }
 
         private void LuaState_OnHookException(object sender, NLua.Event.HookExceptionEventArgs e)
