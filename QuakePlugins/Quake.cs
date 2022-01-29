@@ -74,6 +74,8 @@ namespace QuakePlugins
         public delegate int PR_EnterFunction(IntPtr function);
         [Function(CallingConventions.Microsoft)]
         public delegate void PR_LeaveFunction();
+        [Function(CallingConventions.Microsoft)]
+        public delegate void SV_SpawnServer(IntPtr name);
 
         private static unsafe int MyHook(IntPtr function)
         {
@@ -90,7 +92,7 @@ namespace QuakePlugins
             char* name = (char*)((long long)pr_strings + nameIndex);
             */
 
-            foreach (var addon in Program._addonsManager?.Addons)
+            foreach (var addon in Program._addonsManager.Addons)
             {
                 try
                 {
@@ -124,7 +126,23 @@ namespace QuakePlugins
             //Quake.PrintConsole("QC Leave hooked\n");
         }
 
+        private static unsafe void OnServerSpawn(IntPtr ptr)
+        {
+            _sv_spawnServer.OriginalFunction(ptr);
+
+            try
+            {
+                Program._addonsManager.Start();
+            }
+            catch (Exception ex)
+            {
+                Quake.PrintConsole("Exception: " + ex.ToString() + "\n", System.Drawing.Color.Red);
+            }
+
+        }
+
         private static IHook<PR_EnterFunction> _pr_enterFunctionHook;
+        private static IHook<SV_SpawnServer> _sv_spawnServer;
         private static IAsmHook _pr_leaveFunctionHook;
         private static IReverseWrapper<PR_LeaveFunction> _pr_leaveFunctionWrapper;
 
@@ -217,6 +235,7 @@ namespace QuakePlugins
             }, 0x1401c7df0, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteFirst).Activate();
 
 
+            _sv_spawnServer = ReloadedHooks.Instance.CreateHook<SV_SpawnServer>(OnServerSpawn, 0x1401ea7c0).Activate();
         }
 
 

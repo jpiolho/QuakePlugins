@@ -10,9 +10,14 @@ namespace QuakePlugins.Addons
 
         public IReadOnlyList<Addon> Addons => _addons.AsReadOnly();
 
-        internal void Start()
+        internal AddonsManager()
         {
             _addons = new List<Addon>();
+        }
+
+        internal void Start()
+        {
+            _addons.Clear();
 
             foreach (var folder in new DirectoryInfo(Path.Combine("rerelease","_addons")).GetDirectories())
             {

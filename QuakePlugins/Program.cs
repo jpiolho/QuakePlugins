@@ -31,7 +31,6 @@ namespace QuakePlugins
                 QEngine.InitializeQEngine();
 
                 _addonsManager = new AddonsManager();
-                _addonsManager.Start();
 
                 Quake.SetupHooks();
             }

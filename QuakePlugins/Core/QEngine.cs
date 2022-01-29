@@ -92,6 +92,11 @@ namespace QuakePlugins.Core
             return StringGet(QCGetIntValue(offset));
         }
 
+        public static unsafe EngineEdict* QCGetEdictValue(QCValueOffset offset)
+        {
+            return QEngine.EdictGetByOffset(QCGetIntValue(offset));
+        }
+
         public static void QCSetIntValue(QCValueOffset offset, int value)
         {
             unsafe

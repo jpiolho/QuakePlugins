@@ -7,7 +7,7 @@ using Console = QuakePlugins.API.LuaScripting.Console;
 
 namespace QuakePlugins.LuaScripting
 {
-    internal class LuaEnvironment
+    internal class LuaEnvironment : IDisposable
     {
         private Lua _state;
         public Lua LuaState => _state;
@@ -62,6 +62,9 @@ namespace QuakePlugins.LuaScripting
 
             // Builtins
             _state.DoString("Builtins = {}");
+            _state["Builtins.Makevectors"] = (Action<Vector3>)Builtins.Makevectors;
+            _state["Builtins.SetOrigin"] = (Action<Edict,Vector3>)Builtins.SetOrigin;
+            _state["Builtins.SetModel"] = (Action<Edict,string>)Builtins.SetModel;
             _state["Builtins.BPrint"] = (Action<string>)Builtins.BPrint;
             _state["Builtins.SPrint"] = (Action<Edict,string>)Builtins.SPrint;
             _state["Builtins.Stuffcmd"] = (Action<Edict,string>)Builtins.Stuffcmd;
@@ -90,6 +93,12 @@ namespace QuakePlugins.LuaScripting
 
             foreach (var hook in hookedFunctions)
                 hook.Call();
+        }
+
+        public void Dispose()
+        {
+            _hooks.QCHooks.Clear();
+            _state.Dispose();
         }
     }
 }
