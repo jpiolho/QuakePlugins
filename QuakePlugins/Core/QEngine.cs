@@ -1,4 +1,5 @@
-﻿using Reloaded.Hooks;
+﻿using QuakePlugins.Engine.Types;
+using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions.Structs;
 using Reloaded.Hooks.Definitions.X64;
 using System;
@@ -17,6 +18,8 @@ namespace QuakePlugins.Core
         private static unsafe float* _pr_globals;
         private static IntPtr _pr_builtin;
         private static unsafe int* _pr_argc;
+        private static unsafe EngineEdict** _sv_edicts;
+        private static unsafe uint* _pr_edict_size;
 
         private static byte[] _stack;
         private static int _qc_argcbackup;
@@ -39,6 +42,8 @@ namespace QuakePlugins.Core
                 _pr_globals = *(float**)0x1418a2a00;
                 _pr_builtin = new IntPtr(0x1409a5a80);
                 _pr_argc = (int*)0x1418a2a38;
+                _sv_edicts = (EngineEdict**)0x1418beeb0;
+                _pr_edict_size = (uint*)0x1418a29f8;
             }
         }
 
@@ -113,6 +118,10 @@ namespace QuakePlugins.Core
                 _pr_globals[(int)offset + 1] = value.Y;
                 _pr_globals[(int)offset + 2] = value.Z;
             }
+        }
+        public static unsafe void QCSetEdictValue(QCValueOffset offset, EngineEdict* edict)
+        {
+            QCSetIntValue(offset, EdictGetOffset(edict));
         }
 
         private struct FnBuiltIn { public FuncPtr<int,Void> Value; }
@@ -290,6 +299,34 @@ namespace QuakePlugins.Core
             unsafe
             {
                 return _stringCreate.Value.Invoke(ptr+str.Length+1, ptr);
+            }
+        }
+        
+
+        public static unsafe int EdictGetOffset(EngineEdict* edict)
+        {
+            return (int)((long)edict - (long)*_sv_edicts);
+        }
+        public static unsafe EngineEdict* EdictGetByOffset(int offset)
+        {
+            return (EngineEdict*)((long)*_sv_edicts + offset);
+        }
+
+        public static unsafe int EdictGetIndex(EngineEdict* edict)
+        {
+            return (int)(EdictGetOffset(edict) / *_pr_edict_size);
+        }
+
+        public static unsafe int EdictGetIndex(int offset)
+        {
+            return (int)(offset / *_pr_edict_size);
+        }
+
+        public static unsafe EngineEdict* EdictGetByNumber(int number)
+        {
+            unsafe
+            {
+                return (EngineEdict*)((ulong)*_sv_edicts + (*_pr_edict_size * (uint)number));
             }
         }
     }

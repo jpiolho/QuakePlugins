@@ -9,6 +9,18 @@ namespace QuakePlugins.API
 {
     public static class Builtins
     {
+        public static Edict Spawn()
+        {
+            QEngine.QCRegistersBackup();
+            QEngine.BuiltinCall(14);
+
+            var edict = QC.GetEdict(QC.ValueLocation.Return);
+
+            QEngine.QCRegistersRestore();
+
+            return edict;
+        }
+
         public static void BPrint(string text)
         {
             QEngine.QCRegistersBackup();
@@ -20,6 +32,20 @@ namespace QuakePlugins.API
             QEngine.QCRegistersRestore();
         }
 
+        public static void SPrint(Edict edict, string text)
+        {
+            unsafe
+            {
+                QEngine.QCRegistersBackup();
+
+                QEngine.QCSetArgumentCount(2);
+                QEngine.QCSetEdictValue(QEngine.QCValueOffset.Parameter0, edict.EngineEdict);
+                QEngine.QCSetStringValue(QEngine.QCValueOffset.Parameter1, text);
+                QEngine.BuiltinCall(24);
+
+                QEngine.QCRegistersRestore();
+            }
+        }
 
         public static void Localcmd(string command)
         {
@@ -32,16 +58,19 @@ namespace QuakePlugins.API
             QEngine.QCRegistersRestore();
         }
 
-        public static void Stuffcmd(int entity,string command)
+        public static void Stuffcmd(Edict entity, string command)
         {
-            QEngine.QCRegistersBackup();
+            unsafe
+            {
+                QEngine.QCRegistersBackup();
 
-            QEngine.QCSetArgumentCount(2);
-            QEngine.QCSetIntValue(QEngine.QCValueOffset.Parameter0, entity);
-            QEngine.QCSetStringValue(QEngine.QCValueOffset.Parameter1, command);
-            QEngine.BuiltinCall(21);
+                QEngine.QCSetArgumentCount(2);
+                QEngine.QCSetEdictValue(QEngine.QCValueOffset.Parameter0, entity.EngineEdict);
+                QEngine.QCSetStringValue(QEngine.QCValueOffset.Parameter1, command);
+                QEngine.BuiltinCall(21);
 
-            QEngine.QCRegistersRestore();
+                QEngine.QCRegistersRestore();
+            }
         }
     }
 }

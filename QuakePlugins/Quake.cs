@@ -91,7 +91,16 @@ namespace QuakePlugins
             */
 
             foreach (var addon in Program._addonsManager?.Addons)
-                addon.RaiseQCHook(functionName);
+            {
+                try
+                {
+                    addon.RaiseQCHook(functionName);
+                }
+                catch(Exception ex)
+                {
+                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
+                }
+            }
 
             return _pr_enterFunctionHook.OriginalFunction(function);
         }

@@ -43,6 +43,16 @@ namespace QuakePlugins.API
             return QEngine.QCGetStringValue((QEngine.QCValueOffset)location);
         }
 
+        public static Edict GetEdict(ValueLocation location)
+        {
+            unsafe
+            {
+                int offset = GetInt(location);
+                var ptr = QEngine.EdictGetByOffset(offset);
+                var num = QEngine.EdictGetIndex(offset);
+                return new Edict(num, ptr);
+            }
+        }
 
         public static void SetFloat(ValueLocation location,float value)
         {
@@ -62,6 +72,14 @@ namespace QuakePlugins.API
         public static void SetVector(ValueLocation location, Vector3 value)
         {
             QEngine.QCSetVectorValue((QEngine.QCValueOffset)location, value);
+        }
+
+        public static void SetEdict(ValueLocation location, Edict value)
+        {
+            unsafe
+            {
+                SetInt(location, QEngine.EdictGetOffset(value.EngineEdict));
+            }
         }
 
     }

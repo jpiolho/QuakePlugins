@@ -51,17 +51,22 @@ namespace QuakePlugins.LuaScripting
             _state["QC.Value.Parameter7"] = QC.ValueLocation.Parameter7;
             _state["QC.GetFloat"] = (Func<QC.ValueLocation, float>)QC.GetFloat;
             _state["QC.GetInt"] = (Func<QC.ValueLocation, int>)QC.GetInt;
+            _state["QC.GetEdict"] = (Func<QC.ValueLocation, Edict>)QC.GetEdict;
             _state["QC.GetVector"] = (Func<QC.ValueLocation, Vector3>)QC.GetVector;
             _state["QC.GetString"] = (Func<QC.ValueLocation, string>)QC.GetString;
             _state["QC.SetFloat"] = (Action<QC.ValueLocation,float>)QC.SetFloat;
             _state["QC.SetInt"] = (Action<QC.ValueLocation,int>)QC.SetInt;
             _state["QC.SetString"] = (Action<QC.ValueLocation,string>)QC.SetString;
             _state["QC.SetVector"] = (Action<QC.ValueLocation,Vector3>)QC.SetVector;
+            _state["QC.SetEdict"] = (Action<QC.ValueLocation, Edict>)QC.SetEdict;
 
             // Builtins
             _state.DoString("Builtins = {}");
             _state["Builtins.BPrint"] = (Action<string>)Builtins.BPrint;
-            _state["Builtins.Stuffcmd"] = (Action<int,string>)Builtins.Stuffcmd;
+            _state["Builtins.SPrint"] = (Action<Edict,string>)Builtins.SPrint;
+            _state["Builtins.Stuffcmd"] = (Action<Edict,string>)Builtins.Stuffcmd;
+            _state["Builtins.Localcmd"] = (Action<string>)Builtins.Localcmd;
+            _state["Builtins.Spawn"] = (Func<Edict>)Builtins.Spawn;
 
             _state.DoString("Hooks = {}");
             _state["Hooks.RegisterQC"] = (Action<string, LuaFunction>)_hooks.RegisterQC;
