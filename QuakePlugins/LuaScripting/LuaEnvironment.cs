@@ -39,7 +39,9 @@ namespace QuakePlugins.LuaScripting
             _state["Cvars.Get"] = (Func<string, Cvar>)Cvars.Get;
 
             // QC
+
             _state.DoString("QC = {}");
+
             _state.DoString("QC.Value = {}");
             _state["QC.Value.Return"] = QC.ValueLocation.Return;
             _state["QC.Value.Parameter0"] = QC.ValueLocation.Parameter0;
@@ -50,16 +52,28 @@ namespace QuakePlugins.LuaScripting
             _state["QC.Value.Parameter5"] = QC.ValueLocation.Parameter5;
             _state["QC.Value.Parameter6"] = QC.ValueLocation.Parameter6;
             _state["QC.Value.Parameter7"] = QC.ValueLocation.Parameter7;
-            _state["QC.GetFloat"] = (Func<QC.ValueLocation, float>)QC.GetFloat;
-            _state["QC.GetInt"] = (Func<QC.ValueLocation, int>)QC.GetInt;
-            _state["QC.GetEdict"] = (Func<QC.ValueLocation, Edict>)QC.GetEdict;
-            _state["QC.GetVector"] = (Func<QC.ValueLocation, Vector3>)QC.GetVector;
-            _state["QC.GetString"] = (Func<QC.ValueLocation, string>)QC.GetString;
-            _state["QC.SetFloat"] = (Action<QC.ValueLocation,float>)QC.SetFloat;
-            _state["QC.SetInt"] = (Action<QC.ValueLocation,int>)QC.SetInt;
-            _state["QC.SetString"] = (Action<QC.ValueLocation,string>)QC.SetString;
-            _state["QC.SetVector"] = (Action<QC.ValueLocation,Vector3>)QC.SetVector;
-            _state["QC.SetEdict"] = (Action<QC.ValueLocation, Edict>)QC.SetEdict;
+            _state["QC.GetFloat"] = QC.GetFloat;
+            _state["QC.GetInt"] = QC.GetInt;
+            _state["QC.GetEdict"] = QC.GetEdict;
+            _state["QC.GetVector"] = QC.GetVector;
+            _state["QC.GetString"] = QC.GetString;
+            _state["QC.SetFloat"] = QC.SetFloat;
+            _state["QC.SetInt"] = QC.SetInt;
+            _state["QC.SetString"] = QC.SetString;
+            _state["QC.SetVector"] = QC.SetVector;
+            _state["QC.SetEdict"] = QC.SetEdict;
+            _state["QC.GetSelf"] = () => QC.Self;
+            _state["QC.SetSelf"] = (Edict e) => QC.Self = e;
+            _state["QC.GetOther"] = () => QC.Other;
+            _state["QC.SetOther"] = (Edict e) => QC.Other = e;
+            _state["QC.GetWorld"] = () => QC.World;
+            _state["QC.GetTime"] = () => QC.Time;
+            _state["QC.GetMsgEntity"] = () => QC.MsgEntity;
+            _state["QC.SetMsgEntity"] = (Edict e) => QC.MsgEntity = e;
+
+            // Game
+            _state.DoString("Game = {}");
+            _state["Game.Mod"] = () => Game.Mod;
 
             // Builtins
             _state.DoString("Builtins = {}");
@@ -83,9 +97,22 @@ namespace QuakePlugins.LuaScripting
             _state["Builtins.DrawCylinder"] = Builtins.DrawCylinder;
             _state["Builtins.PrecacheSound"] = Builtins.PrecacheSound;
             _state["Builtins.PrecacheModel"] = Builtins.PrecacheModel;
+            _state["Builtins.WriteByte"] = Builtins.WriteByte;
+            _state["Builtins.WriteChar"] = Builtins.WriteChar;
+            _state["Builtins.WriteCoord"] = Builtins.WriteCoord;
+            _state["Builtins.WriteEntity"] = Builtins.WriteEntity;
+            _state["Builtins.WriteLong"] = Builtins.WriteLong;
+            _state["Builtins.WriteShort"] = Builtins.WriteShort;
+            _state["Builtins.WriteString"] = Builtins.WriteString;
+            _state["Builtins.NextEnt"] = Builtins.NextEnt;
 
+            // Hooks
             _state.DoString("Hooks = {}");
-            _state["Hooks.RegisterQC"] = (Action<string, LuaFunction>)_hooks.RegisterQC;
+            _state["Hooks.RegisterQC"] = _hooks.RegisterQC;
+            _state["Hooks.DeregisterQC"] = _hooks.DeregisterQC;
+            _state["Hooks.RegisterQCPost"] = _hooks.RegisterQCPost;
+            _state["Hooks.DeregisterQCPost"] = _hooks.DeregisterQCPost;
+
 #pragma warning restore CS8974 // Converting method group to non-delegate type
         }
 
@@ -109,9 +136,19 @@ namespace QuakePlugins.LuaScripting
                 hook.Call();
         }
 
+        public void RaiseQCHookPost(string name)
+        {
+            if (!_hooks.QCHooksPost.TryGetValue(name, out var hookedFunctions))
+                return;
+
+            foreach (var hook in hookedFunctions)
+                hook.Call();
+        }
+
         public void Dispose()
         {
             _hooks.QCHooks.Clear();
+            _hooks.QCHooksPost.Clear();
             _state.Dispose();
         }
     }

@@ -82,6 +82,7 @@ namespace QuakePlugins.API
         public static void BPrint(string text) => CallBuiltIn(23, text);
         public static void SPrint(Edict edict, string text) => CallBuiltIn(24, edict, text);
         public static void Localcmd(string command) => CallBuiltIn(46, command);
+        public static Edict NextEnt(Edict e) => CallBuiltIn<Edict>(47, e);
 
 
         public static void WriteByte(float to, float f) => CallBuiltIn(52, to, f);
@@ -90,7 +91,7 @@ namespace QuakePlugins.API
         public static void WriteLong(float to, float f) => CallBuiltIn(55, to, f);
         public static void WriteCoord(float to, float f) => CallBuiltIn(56, to, f);
         public static void WriteAngle(float to, float f) => CallBuiltIn(57, to, f);
-        public static void WriteString(float to, float f) => CallBuiltIn(58, to, f);
+        public static void WriteString(float to, string f) => CallBuiltIn(58, to, f);
         public static void WriteEntity(float to, Edict f) => CallBuiltIn(59, to, f);
 
         public static void CvarSet(string cvar, string value) => CallBuiltIn(72, cvar, value);

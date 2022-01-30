@@ -20,6 +20,7 @@ namespace QuakePlugins.Core
         private static unsafe int* _pr_argc;
         private static unsafe EngineEdict** _sv_edicts;
         private static unsafe uint* _pr_edict_size;
+        private static unsafe char*** _g_gamedir;
 
         private static byte[] _stack;
         private static int _qc_argcbackup;
@@ -39,6 +40,7 @@ namespace QuakePlugins.Core
 
             unsafe
             {
+                _g_gamedir = (char***)0x140e4bb18;
                 _pr_globals = new IntPtr(0x1418a2a00);
                 _pr_builtin = new IntPtr(0x1409a5a80);
                 _pr_argc = (int*)0x1418a2a38;
@@ -311,6 +313,11 @@ namespace QuakePlugins.Core
         }
         
 
+        public static unsafe EngineGlobalVars* GetGlobals()
+        {
+            return *(EngineGlobalVars**)_pr_globals.ToPointer();
+        }
+
         public static unsafe int EdictGetOffset(EngineEdict* edict)
         {
             return (int)((long)edict - (long)*_sv_edicts);
@@ -335,6 +342,14 @@ namespace QuakePlugins.Core
             unsafe
             {
                 return (EngineEdict*)((ulong)*_sv_edicts + (*_pr_edict_size * (uint)number));
+            }
+        }
+
+        public static string GameGetGameDir()
+        {
+            unsafe
+            {
+                return Marshal.PtrToStringAuto(new IntPtr(*_g_gamedir));
             }
         }
     }

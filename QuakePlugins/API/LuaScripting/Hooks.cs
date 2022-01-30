@@ -10,12 +10,15 @@ namespace QuakePlugins.API.LuaScripting
     internal class Hooks
     {
         private Dictionary<string,List<LuaFunction>> _qcHooks;
+        private Dictionary<string,List<LuaFunction>> _qcHooksPost;
 
         public Dictionary<string, List<LuaFunction>> QCHooks => _qcHooks;
+        public Dictionary<string, List<LuaFunction>> QCHooksPost => _qcHooksPost;
 
         public Hooks()
         {
             _qcHooks = new Dictionary<string, List<LuaFunction>>();
+            _qcHooksPost = new Dictionary<string, List<LuaFunction>>();
         }
 
         public void RegisterQC(string name,LuaFunction func)
@@ -29,6 +32,22 @@ namespace QuakePlugins.API.LuaScripting
         public bool DeregisterQC(string name,LuaFunction func)
         {
             if (!_qcHooks.TryGetValue(name, out var hookList))
+                return false;
+
+            return hookList.Remove(func);
+        }
+
+        public void RegisterQCPost(string name, LuaFunction func)
+        {
+            if (!_qcHooksPost.TryGetValue(name, out var hookList))
+                _qcHooksPost[name] = hookList = new List<LuaFunction>();
+
+            hookList.Add(func);
+        }
+
+        public bool DeregisterQCPost(string name,LuaFunction func)
+        {
+            if (!_qcHooksPost.TryGetValue(name, out var hookList))
                 return false;
 
             return hookList.Remove(func);

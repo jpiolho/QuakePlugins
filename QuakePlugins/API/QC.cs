@@ -82,5 +82,66 @@ namespace QuakePlugins.API
             }
         }
 
+
+        public static Edict Self
+        {
+            get
+            {
+                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->self)); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->self = QEngine.EdictGetOffset(value.EngineEdict); }
+            }
+        }
+
+        public static Edict World
+        {
+            get
+            {
+                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->world)); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->world = QEngine.EdictGetOffset(value.EngineEdict); }
+            }
+        }
+
+        public static Edict Other
+        {
+            get
+            {
+                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->other)); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->other = QEngine.EdictGetOffset(value.EngineEdict); }
+            }
+        }
+
+        public static Edict MsgEntity
+        {
+            get
+            {
+                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->msgEntity)); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->msgEntity = QEngine.EdictGetOffset(value.EngineEdict); }
+            }
+        }
+
+        public static float Time
+        {
+            get
+            {
+                unsafe { return QEngine.GetGlobals()->time; }
+            }
+        }
+
     }
 }

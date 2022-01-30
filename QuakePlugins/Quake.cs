@@ -75,7 +75,7 @@ namespace QuakePlugins
         [Function(CallingConventions.Microsoft)]
         public delegate void PR_LeaveFunction();
         [Function(CallingConventions.Microsoft)]
-        public delegate void SV_SpawnServer(IntPtr name);
+        public delegate void ED_LoadFromFile(IntPtr name);
 
         private static unsafe int MyHook(IntPtr function)
         {
@@ -122,13 +122,25 @@ namespace QuakePlugins
 
             //Quake.PrintConsole("QC Leave Function: " + functionName + "\n");
 
+
+            foreach (var addon in Program._addonsManager.Addons)
+            {
+                try
+                {
+                    addon.RaiseQCHookPost(functionName);
+                }
+                catch (Exception ex)
+                {
+                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
+                }
+            }
+
             ;
             //Quake.PrintConsole("QC Leave hooked\n");
         }
 
-        private static unsafe void OnServerSpawn(IntPtr ptr)
+        private static unsafe void OnLoadEdictsFromFile(IntPtr ptr)
         {
-            _sv_spawnServer.OriginalFunction(ptr);
 
             try
             {
@@ -139,10 +151,11 @@ namespace QuakePlugins
                 Quake.PrintConsole("Exception: " + ex.ToString() + "\n", System.Drawing.Color.Red);
             }
 
+            _ed_loadFromFile.OriginalFunction(ptr);
         }
 
         private static IHook<PR_EnterFunction> _pr_enterFunctionHook;
-        private static IHook<SV_SpawnServer> _sv_spawnServer;
+        private static IHook<ED_LoadFromFile> _ed_loadFromFile;
         private static IAsmHook _pr_leaveFunctionHook;
         private static IReverseWrapper<PR_LeaveFunction> _pr_leaveFunctionWrapper;
 
@@ -235,7 +248,7 @@ namespace QuakePlugins
             }, 0x1401c7df0, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteFirst).Activate();
 
 
-            _sv_spawnServer = ReloadedHooks.Instance.CreateHook<SV_SpawnServer>(OnServerSpawn, 0x1401ea7c0).Activate();
+            _ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, 0x1401c59f0).Activate();
         }
 
 

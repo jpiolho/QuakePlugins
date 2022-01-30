@@ -19,8 +19,8 @@ namespace QuakePlugins.Addons
         internal void Load()
         {
             _lua = new LuaEnvironment();
-            _lua.Initialize();
             _lua.LuaException += Lua_Exception;
+            _lua.Initialize();
 
             _lua.ExecuteFile(Path.Combine(_path, "main.lua"));
         }
@@ -34,6 +34,12 @@ namespace QuakePlugins.Addons
         internal void RaiseQCHook(string name)
         {
             _lua.RaiseQCHook(name);
+            // TODO: C# Raise QC Hook
+        }
+
+        internal void RaiseQCHookPost(string name)
+        {
+            _lua.RaiseQCHookPost(name);
             // TODO: C# Raise QC Hook
         }
     }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -76,11 +77,20 @@ namespace QuakePlugins.API
         }
 
 
-        private void InternalSetField(string name, object value)
+        private void InternalSetField<TValue>(string name, params TValue[] values) where TValue : unmanaged
         {
             unsafe
             {
-                EngineEntityVars.GetFieldByName(name)?.SetValue(_edict->vars, value);
+                var field = EngineEntityVars.GetFieldByName(name);
+
+                if (field == null)
+                    return;
+
+                var fieldOffset = Marshal.OffsetOf<EngineEntityVars>(field.Name);
+                var varOffset = Marshal.OffsetOf<EngineEdict>("vars");
+
+                for (int i = 0; i < values.Length; i++)
+                    *(TValue*)((long)EngineEdict + varOffset.ToInt64() + fieldOffset.ToInt64() + (i * sizeof(int))) = values[i];
             }
         }
         private object InternalGetField(string name)
