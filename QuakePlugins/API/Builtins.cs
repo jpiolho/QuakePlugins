@@ -61,10 +61,6 @@ namespace QuakePlugins.API
                     retValue = new Edict(0, QEngine.QCGetEdictValue(QEngine.QCValueOffset.Return));
                 }
             }
-            else
-            {
-                throw new Exception($"Unsupported return type: {typeof(TReturnType)}");
-            }
 
             QEngine.QCRegistersRestore();
 

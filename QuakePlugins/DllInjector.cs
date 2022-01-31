@@ -101,23 +101,41 @@ namespace QuakePlugins
             // searching for the address of LoadLibraryA and storing it in a pointer
             IntPtr loadLibraryAddr = Interop.GetProcAddress(Interop.GetModuleHandle("kernel32.dll"), "LoadLibraryA");
 
-            // alocating some memory on the target process - enough to store the name of the dll
-            // and storing its address in a pointer
-            IntPtr allocMemAddress = Interop.VirtualAllocEx(procHandle, IntPtr.Zero, (uint)((dllPath.Length + 1) * Marshal.SizeOf(typeof(char))), Interop.MEM_COMMIT | Interop.MEM_RESERVE, Interop.PAGE_READWRITE);
 
-            // writing the name of the dll there
-            UIntPtr bytesWritten;
-            Interop.WriteProcessMemory(procHandle, allocMemAddress, Encoding.Default.GetBytes(dllPath), (uint)((dllPath.Length + 1) * Marshal.SizeOf(typeof(char))), out bytesWritten);
+            
+            IntPtr LoadRemoteLibrary(string libraryPath)
+            {
+                // alocating some memory on the target process - enough to store the name of the dll
+                // and storing its address in a pointer
+                IntPtr allocMemAddress = Interop.VirtualAllocEx(procHandle, IntPtr.Zero, (uint)((libraryPath.Length + 1) * Marshal.SizeOf(typeof(char))), Interop.MEM_COMMIT | Interop.MEM_RESERVE, Interop.PAGE_READWRITE);
 
-            // creating a thread that will call LoadLibraryA with allocMemAddress as argument
-            var remoteThread = Interop.CreateRemoteThread(procHandle, IntPtr.Zero, 0, loadLibraryAddr, allocMemAddress, 0, IntPtr.Zero);
+                // writing the name of the dll there
+                UIntPtr bytesWritten;
+                Interop.WriteProcessMemory(procHandle, allocMemAddress, Encoding.Default.GetBytes(libraryPath), (uint)((libraryPath.Length + 1) * Marshal.SizeOf(typeof(char))), out bytesWritten);
 
-            var waitResult = Interop.WaitForSingleObject(remoteThread, 5000);
-            if (waitResult != 0)
-                throw new Exception("Failed to inject dll");
+                // creating a thread that will call LoadLibraryA with allocMemAddress as argument
+                var remoteThread = Interop.CreateRemoteThread(procHandle, IntPtr.Zero, 0, loadLibraryAddr, allocMemAddress, 0, IntPtr.Zero);
 
-            Interop.GetExitCodeThread(remoteThread, out var handleInjected);
-            Interop.CloseHandle(remoteThread);
+                var waitResult = Interop.WaitForSingleObject(remoteThread, 5000);
+                if (waitResult != 0)
+                    throw new Exception("Failed to inject dll");
+
+                Interop.GetExitCodeThread(remoteThread, out var handleInjected);
+                Interop.CloseHandle(remoteThread);
+
+                return allocMemAddress;
+            }
+            
+
+            LoadRemoteLibrary(Path.Combine(Path.GetDirectoryName(dllPath), "comhost.dll"));
+            LoadRemoteLibrary(Path.Combine(Path.GetDirectoryName(dllPath), "ijwhost.dll"));
+            LoadRemoteLibrary(Path.Combine(Path.GetDirectoryName(dllPath), "nethost.dll"));
+
+
+            
+            var allocMemAddress = LoadRemoteLibrary(dllPath);
+
+
 
 
             IntPtr ownAddrLoadNetCore = Interop.GetProcAddress(module, functionCall);
@@ -141,9 +159,9 @@ namespace QuakePlugins
             }
 
 
-            remoteThread = Interop.CreateRemoteThread(procHandle, IntPtr.Zero, 0, remoteAddrLoadNetCore, allocMemAddress, 0, IntPtr.Zero);
+            var remoteThread = Interop.CreateRemoteThread(procHandle, IntPtr.Zero, 0, remoteAddrLoadNetCore, allocMemAddress, 0, IntPtr.Zero);
 
-            waitResult = Interop.WaitForSingleObject(remoteThread, 5000);
+            var waitResult = Interop.WaitForSingleObject(remoteThread, 5000);
                         
             var error = Interop.GetLastError();
 

@@ -85,12 +85,38 @@ load_assembly_and_get_function_pointer_fn get_dotnet_load_assembly(const std::ws
     return load_assembly_fptr;
 }
 
+BOOL FileExists(LPCTSTR szPath)
+{
+    DWORD dwAttrib = GetFileAttributes(szPath);
+
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+        !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
+
 
 void* get_dotnet_function(std::wstring functionName,std::wstring functionNamespace,std::wstring functionDelegate) {
+
+
+    std::wstring file1 = append_path(dll_folder, L"QuakePlugins.dll");
+    std::wstring file2 = append_path(dll_folder, L"QuakePlugins.exe");
+
+    std::wstring filePath;
+    if (!FileExists(file1.c_str())) {
+        if (!FileExists(file2.c_str())) {
+            return nullptr;
+        }
+        else {
+            filePath = file2;
+        }
+    }
+    else {
+        filePath = file1;
+    }
+
     //typedef void (CORECLR_DELEGATE_CALLTYPE* initialize_fn)();
     void* functionPtr = nullptr;
     int rc = load_assembly_fptr(
-        append_path(dll_folder,L"QuakePlugins.dll").c_str(),
+        filePath.c_str(),
         functionNamespace.c_str(),
         functionName.c_str(),
         functionDelegate.c_str(), /*delegate_type_name*/
