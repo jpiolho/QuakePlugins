@@ -8,6 +8,10 @@ namespace QuakePlugins.API.LuaScripting
     {
         public static Cvar Register(string name, string defaultValue, string description = "")
         {
+            var ptr = QEngine.CvarGet(name);
+            if (ptr != IntPtr.Zero)
+                return new Cvar(ptr);
+
             return new Cvar(QEngine.CvarRegister(name, description, defaultValue, 0x0, 0f, 1f, false, System.IntPtr.Zero));
         }
 
