@@ -106,6 +106,14 @@ namespace QuakePlugins.LuaScripting
             _state["Builtins.WriteString"] = Builtins.WriteString;
             _state["Builtins.NextEnt"] = Builtins.NextEnt;
 
+            _state["Builtins.ByIndexVoid"] = Builtins.ByIndexVoid;
+            _state["Builtins.ByIndexFloat"] = Builtins.ByIndexFloat;
+            _state["Builtins.ByIndexBool"] = Builtins.ByIndexBool;
+            _state["Builtins.ByIndexString"] = Builtins.ByIndexString;
+            _state["Builtins.ByIndexVector"] = Builtins.ByIndexVector;
+            _state["Builtins.ByIndexEdict"] = Builtins.ByIndexEdict;
+            _state["Builtins.ByIndexInt"] = Builtins.ByIndexInt;
+
             // Hooks
             _state.DoString("Hooks = {}");
             _state["Hooks.RegisterQC"] = _hooks.RegisterQC;

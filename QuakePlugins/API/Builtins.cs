@@ -19,6 +19,13 @@ namespace QuakePlugins.API
             var offset = QEngine.QCValueOffset.Parameter0;
             for (var i = 0; i < parameters.Length && i < 8; i++, offset = (QEngine.QCValueOffset)((int)offset + ((int)QEngine.QCValueOffset.Parameter1 - (int)QEngine.QCValueOffset.Parameter0)))
             {
+                // Special case for null
+                if (parameters[i] == null)
+                {
+                    QEngine.QCSetIntValue(offset, 0);
+                    break;
+                }
+
                 switch (parameters[i])
                 {
                     case float valueFloat: QEngine.QCSetFloatValue(offset, valueFloat); break;
@@ -28,7 +35,7 @@ namespace QuakePlugins.API
                     case int valueInt: QEngine.QCSetIntValue(offset, valueInt); break;
                     case bool valueBool: QEngine.QCSetFloatValue(offset, valueBool ? 1 : 0); break;
                     default:
-                        throw new Exception("Unsupported type");
+                        throw new Exception($"Unsupported parameter type: {parameters[i].GetType()}");
                 }
             }
 
@@ -37,6 +44,8 @@ namespace QuakePlugins.API
             object retValue = null;
             if (typeof(TReturnType) == typeof(float))
                 retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return);
+            else if (typeof(TReturnType) == typeof(bool))
+                retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return) != 0;
             else if (typeof(TReturnType) == typeof(int))
                 retValue = QEngine.QCGetIntValue(QEngine.QCValueOffset.Return);
             else if (typeof(TReturnType) == typeof(bool))
@@ -51,6 +60,10 @@ namespace QuakePlugins.API
                 {
                     retValue = new Edict(0, QEngine.QCGetEdictValue(QEngine.QCValueOffset.Return));
                 }
+            }
+            else
+            {
+                throw new Exception($"Unsupported return type: {typeof(TReturnType)}");
             }
 
             QEngine.QCRegistersRestore();
@@ -81,9 +94,25 @@ namespace QuakePlugins.API
         public static Edict FindRadius(Vector3 origin, float radius) => CallBuiltIn<Edict>(22, origin, radius);
         public static void BPrint(string text) => CallBuiltIn(23, text);
         public static void SPrint(Edict edict, string text) => CallBuiltIn(24, edict, text);
+        public static void DPrint(string text) => CallBuiltIn(25, text);
+        public static string Ftos(float f) => CallBuiltIn<string>(26, f);
+        public static string Vtos(float f) => CallBuiltIn<string>(27, f);
+        public static void Coredump() => CallBuiltIn(28);
+        public static void TraceOn() => CallBuiltIn(29);
+        public static void TraceOff() => CallBuiltIn(30);
+        public static void EPrint(Edict e) => CallBuiltIn(31, e);
+        public static float WalkMove(float yaw, float dist) => CallBuiltIn<float>(32, yaw, dist);
+        public static float DropToFloor() => CallBuiltIn<float>(34);
+        public static void Lightstyle(float style, string value) => CallBuiltIn(35);
+
+        public static float CheckBottom(Edict e) => CallBuiltIn<float>(40, e);
+        public static float PointContents(Vector3 v) => CallBuiltIn<float>(41, v);
+
+        public static Vector3 Aim(Edict e, float speed) => CallBuiltIn<Vector3>(44, e, speed);
+        public static float Cvar(string s) => CallBuiltIn<float>(45, s);
         public static void Localcmd(string command) => CallBuiltIn(46, command);
         public static Edict NextEnt(Edict e) => CallBuiltIn<Edict>(47, e);
-
+        public static void Particle(Vector3 origin, Vector3 direction, float color, float count) => CallBuiltIn(48, origin, direction, color, count);
 
         public static void WriteByte(float to, float f) => CallBuiltIn(52, to, f);
         public static void WriteChar(float to, float f) => CallBuiltIn(53, to, f);
@@ -98,13 +127,22 @@ namespace QuakePlugins.API
 
         public static void LocalSound(Edict entity, string snd) => CallBuiltIn(80, entity, snd);
         public static void DrawPoint(Vector3 point, float colormap, float lifetime, bool depthtest) => CallBuiltIn(81, point, colormap, lifetime, depthtest);
-        public static void DrawLine(Vector3 start, Vector3 end, float colormap, float lifetime, bool depthtest) => CallBuiltIn(82, start,end, colormap, lifetime, depthtest);
-        public static void DrawArrow(Vector3 start, Vector3 end, float colormap, float size, float lifetime, bool depthtest) => CallBuiltIn(83, start,end, colormap, size, lifetime, depthtest);
-        public static void DrawRay(Vector3 start, Vector3 direction, float length, float colormap, float size, float lifetime, bool depthtest) => CallBuiltIn(84, start,direction,length, colormap, size, lifetime, depthtest);
+        public static void DrawLine(Vector3 start, Vector3 end, float colormap, float lifetime, bool depthtest) => CallBuiltIn(82, start, end, colormap, lifetime, depthtest);
+        public static void DrawArrow(Vector3 start, Vector3 end, float colormap, float size, float lifetime, bool depthtest) => CallBuiltIn(83, start, end, colormap, size, lifetime, depthtest);
+        public static void DrawRay(Vector3 start, Vector3 direction, float length, float colormap, float size, float lifetime, bool depthtest) => CallBuiltIn(84, start, direction, length, colormap, size, lifetime, depthtest);
         public static void DrawCircle(Vector3 origin, float radius, float colormap, float lifetime, bool depthtest) => CallBuiltIn(85, origin, radius, colormap, lifetime, depthtest);
         public static void DrawBounds(Vector3 min, Vector3 max, float colormap, float lifetime, bool depthtest) => CallBuiltIn(86, min, max, colormap, lifetime, depthtest);
-        public static void DrawWorldText(string text, Vector3 origin, float size, float lifetime, bool depthtest) => CallBuiltIn(87, text,origin, size, lifetime, depthtest);
+        public static void DrawWorldText(string text, Vector3 origin, float size, float lifetime, bool depthtest) => CallBuiltIn(87, text, origin, size, lifetime, depthtest);
         public static void DrawSphere(Vector3 origin, float radius, float colormap, float lifetime, bool depthtest) => CallBuiltIn(88, origin, radius, colormap, lifetime, depthtest);
         public static void DrawCylinder(Vector3 origin, float halfHeight, float radius, float colormap, float lifetime, bool depthtest) => CallBuiltIn(89, origin, halfHeight, radius, colormap, lifetime, depthtest);
+
+
+        public static void ByIndexVoid(int index, params object[] arguments) => CallBuiltIn(index, arguments);
+        public static string ByIndexString(int index, params object[] arguments) => CallBuiltIn<string>(index, arguments);
+        public static float ByIndexFloat(int index, params object[] arguments) => CallBuiltIn<float>(index, arguments);
+        public static Vector3 ByIndexVector(int index, params object[] arguments) => CallBuiltIn<Vector3>(index, arguments);
+        public static Edict ByIndexEdict(int index, params object[] arguments) => CallBuiltIn<Edict>(index, arguments);
+        public static int ByIndexInt(int index, params object[] arguments) => CallBuiltIn<int>(index, arguments);
+        public static bool ByIndexBool(int index, params object[] arguments) => CallBuiltIn<bool>(index, arguments);
     }
 }
