@@ -12,8 +12,14 @@ An engine mod for Quake Enhanced that adds plugin capabilities via C# and Lua.
 
 ## Requirements 
 * .NET 6.0
-* comhost.dll, ijwhost.dll and nethost.dll from .NET 6.0 (`C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.1\runtimes\win-x64\native`)
-* lua54.dll
+
+## Installing alpha build
+1. Download the build from the Github releases.
+2. Extract into a folder somewhere on your computer
+3. Download plugins or write your own. Make sure you place them in the right place (`<Quake folder>/rerelease/_addons/<plugin name>/main.lua`)
+4. Start game
+5. Run QuakePlugins.exe, it will now inject itself into the game and load the plugins + runtime. Check console and you should be able to see a bunch of output.
+6. Done!
 
 ## Lua plugins
 Place them in `<Quake folder>/rerelease/_addons/<plugin name>/main.lua`
