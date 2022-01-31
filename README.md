@@ -1,7 +1,7 @@
 # QuakePlugins
 An engine mod for Quake Enhanced that adds plugin capabilities via C# and Lua.
 
-**This is a work in progress and is not ready for general use**
+**This is a work in progress and is not ready for general use. The code is extremely messy at the moment since right now it's trying to be a proof of concept**
 
 ## How does this work?
 
