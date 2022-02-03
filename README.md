@@ -22,7 +22,9 @@ An engine mod for Quake Enhanced that adds plugin capabilities via C# and Lua.
 6. Done!
 
 ## Lua plugins
-Place them in `<Quake folder>/rerelease/_addons/<plugin name>/main.lua`
+You can find another repo with examples and misc plugins here: [QuakePlugins.Plugins](https://github.com/jpiolho/QuakePlugins.Plugins)
+
+Plugins should be installed in the following folder: `<Quake folder>/rerelease/_addons/<plugin name>/main.lua`
 
 Example plugin:
 ```lua

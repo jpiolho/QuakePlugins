@@ -1,4 +1,5 @@
 ﻿using QuakePlugins.Core;
+using QuakePlugins.Engine;
 using QuakePlugins.Engine.Types;
 using System;
 using System.Collections.Generic;
@@ -13,38 +14,42 @@ namespace QuakePlugins.API
 {
     public class Edict
     {
-        private int _edictIndex;
+        private int? _index;
         private unsafe EngineEdict* _edict;
 
-        public int Index => _edictIndex;
+        public int Index
+        {
+            get
+            {
+                unsafe
+                {
+                    if (!_index.HasValue)
+                        _index = QEngine.EdictGetIndex(_edict);
+
+                    return _index.Value;
+                }
+            }
+        }
         public unsafe EngineEdict* EngineEdict => _edict;
 
-        internal unsafe Edict(int index, EngineEdict* pointer)
+        internal unsafe Edict(EngineEdict* pointer)
         {
-            _edictIndex = index;
             _edict = pointer;
         }
 
 
         public string Classname
         {
-            get
-            {
-                unsafe
-                {
-                    return QEngine.StringGet(_edict->vars.classname);
-                }
-            }
+            get { unsafe { return QEngine.StringGet((&_edict->vars)->classname); } }
 
-            set
-            {
-                unsafe
-                {
-                    _edict->vars.classname = QEngine.StringCreate(value);
-                }
-            }
+            set { unsafe { (&_edict->vars)->classname = QEngine.StringCreate(value); } }
         }
 
+        public Vector3 Origin
+        {
+            get { unsafe { return (&_edict->vars)->origin.ToVector3(); } }
+            set { unsafe { (&_edict->vars)->origin = value.ToEngineVector(); } }
+        }
 
 
 
@@ -72,7 +77,7 @@ namespace QuakePlugins.API
         {
             unsafe {
                 var ptr = QEngine.EdictGetByOffset(GetFieldInt(name));
-                return new Edict(0, ptr);
+                return new Edict(ptr);
             }
         }
 

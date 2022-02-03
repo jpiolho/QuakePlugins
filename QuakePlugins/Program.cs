@@ -1,5 +1,5 @@
 ﻿using QuakePlugins.Addons;
-using QuakePlugins.Core;
+using QuakePlugins.Engine;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,7 +24,7 @@ namespace QuakePlugins
 
         static void MainInjected()
         {
-            //Debugger.Launch();
+            Debugger.Launch();
 
             try
             {

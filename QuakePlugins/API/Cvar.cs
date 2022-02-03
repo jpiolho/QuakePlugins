@@ -1,11 +1,11 @@
-﻿using QuakePlugins.Core;
+﻿using QuakePlugins.Engine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QuakePlugins.API.LuaScripting
+namespace QuakePlugins.API
 {
     internal class Cvar
     {
@@ -15,7 +15,7 @@ namespace QuakePlugins.API.LuaScripting
         {
             _pointer = pointer;
         }
-
+            
         public string GetString()
         {
             return QEngine.CvarGetStringValue(_pointer);

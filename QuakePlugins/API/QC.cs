@@ -1,4 +1,5 @@
 ﻿using QuakePlugins.Core;
+using QuakePlugins.Engine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace QuakePlugins.API
 {
     public static class QC
     {
-        public enum ValueLocation
+        public enum Value
         {
             Return = 1,
             Parameter0 = 4,
@@ -23,58 +24,63 @@ namespace QuakePlugins.API
             Parameter7 = 25
         }
 
-        public static float GetFloat(ValueLocation location)
+        public static void Call(string name,params object[] parameters)
+        {
+            var func = QEngine.QCGetFunctionByName(name);
+            QEngine.QCCallFunction(func);
+        }
+
+        public static float GetFloat(Value location)
         {
             return QEngine.QCGetFloatValue((QEngine.QCValueOffset)location);
         }
 
-        public static int GetInt(ValueLocation location)
+        public static int GetInt(Value location)
         {
             return QEngine.QCGetIntValue((QEngine.QCValueOffset)location);
         }
 
-        public static Vector3 GetVector(ValueLocation location)
+        public static Vector3 GetVector(Value location)
         {
             return QEngine.QCGetVectorValue((QEngine.QCValueOffset)location);
         }
 
-        public static string GetString(ValueLocation location)
+        public static string GetString(Value location)
         {
             return QEngine.QCGetStringValue((QEngine.QCValueOffset)location);
         }
 
-        public static Edict GetEdict(ValueLocation location)
+        public static Edict GetEdict(Value location)
         {
             unsafe
             {
                 int offset = GetInt(location);
                 var ptr = QEngine.EdictGetByOffset(offset);
-                var num = QEngine.EdictGetIndex(offset);
-                return new Edict(num, ptr);
+                return new Edict(ptr);
             }
         }
 
-        public static void SetFloat(ValueLocation location,float value)
+        public static void SetFloat(Value location,float value)
         {
             QEngine.QCSetFloatValue((QEngine.QCValueOffset)location, value);
         }
 
-        public static void SetInt(ValueLocation location,int value)
+        public static void SetInt(Value location,int value)
         {
             QEngine.QCSetIntValue((QEngine.QCValueOffset)location, value);
         }
 
-        public static void SetString(ValueLocation location, string value)
+        public static void SetString(Value location, string value)
         {
             QEngine.QCSetStringValue((QEngine.QCValueOffset)location, value);
         }
 
-        public static void SetVector(ValueLocation location, Vector3 value)
+        public static void SetVector(Value location, Vector3 value)
         {
             QEngine.QCSetVectorValue((QEngine.QCValueOffset)location, value);
         }
 
-        public static void SetEdict(ValueLocation location, Edict value)
+        public static void SetEdict(Value location, Edict value)
         {
             unsafe
             {
@@ -87,7 +93,7 @@ namespace QuakePlugins.API
         {
             get
             {
-                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->self)); }
+                unsafe { return new Edict(QEngine.EdictGetByOffset(QEngine.GetGlobals()->self)); }
             }
 
             set
@@ -100,7 +106,7 @@ namespace QuakePlugins.API
         {
             get
             {
-                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->world)); }
+                unsafe { return new Edict(QEngine.EdictGetByOffset(QEngine.GetGlobals()->world)); }
             }
 
             set
@@ -113,7 +119,7 @@ namespace QuakePlugins.API
         {
             get
             {
-                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->other)); }
+                unsafe { return new Edict(QEngine.EdictGetByOffset(QEngine.GetGlobals()->other)); }
             }
 
             set
@@ -126,7 +132,7 @@ namespace QuakePlugins.API
         {
             get
             {
-                unsafe { return new Edict(0, QEngine.EdictGetByOffset(QEngine.GetGlobals()->msgEntity)); }
+                unsafe { return new Edict(QEngine.EdictGetByOffset(QEngine.GetGlobals()->msgEntity)); }
             }
 
             set
@@ -135,11 +141,109 @@ namespace QuakePlugins.API
             }
         }
 
+        public static Vector3 V_Forward
+        {
+            get
+            {
+                unsafe { return QEngine.GetGlobals()->v_forward.ToVector3(); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->v_forward = value.ToEngineVector(); }
+            }
+        }
+
+        public static Vector3 V_Up
+        {
+            get
+            {
+                unsafe { return QEngine.GetGlobals()->v_up.ToVector3(); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->v_up = value.ToEngineVector(); }
+            }
+        }
+
+        public static Vector3 V_Right
+        {
+            get
+            {
+                unsafe { return QEngine.GetGlobals()->v_right.ToVector3(); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->v_right = value.ToEngineVector(); }
+            }
+        }
+
+        public static float KilledMonsters
+        {
+            get
+            {
+                unsafe { return QEngine.GetGlobals()->killedMonsters; }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->killedMonsters = value; }
+            }
+        }
+
+        public static string MapName
+        {
+            get
+            {
+                unsafe { return QEngine.StringGet(QEngine.GetGlobals()->mapname); }
+            }
+        }
+
         public static float Time
         {
             get
             {
                 unsafe { return QEngine.GetGlobals()->time; }
+            }
+        }
+
+        public static Vector3 TraceEndPosition
+        {
+            get
+            {
+                unsafe { return QEngine.GetGlobals()->traceEndPos.ToVector3(); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->traceEndPos = value.ToEngineVector(); }
+            }
+        }
+
+        public static Edict TraceEnt
+        {
+            get
+            {
+                unsafe { return new Edict(QEngine.EdictGetByOffset(QEngine.GetGlobals()->traceEnt)); }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->traceEnt = QEngine.EdictGetOffset(value.EngineEdict); }
+            }
+        }
+        public static float TraceFraction
+        {
+            get
+            {
+                unsafe { return QEngine.GetGlobals()->traceFraction; }
+            }
+
+            set
+            {
+                unsafe { QEngine.GetGlobals()->traceFraction = value; }
             }
         }
 

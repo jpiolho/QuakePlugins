@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Void = Reloaded.Hooks.Definitions.Structs.Void;
 
-namespace QuakePlugins.Core
+namespace QuakePlugins.Engine
 {
     internal class QEngine
     {
@@ -21,6 +21,8 @@ namespace QuakePlugins.Core
         private static unsafe EngineEdict** _sv_edicts;
         private static unsafe uint* _pr_edict_size;
         private static unsafe char*** _g_gamedir;
+        private static unsafe EngineServerStatic* _serverStatic;
+        private static unsafe void** _pr_functions;
 
         private static byte[] _stack;
         private static int _qc_argcbackup;
@@ -30,7 +32,7 @@ namespace QuakePlugins.Core
             _stack = new byte[112];
 
             var hooks = ReloadedHooks.Instance;
-            _consolePrint = hooks.CreateWrapper<FnConsolePrint>(0x1400d69a0,out _);
+            _consolePrint = hooks.CreateWrapper<FnConsolePrint>(0x1400d69a0, out _);
             _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(0x1400da2c0, out _);
             _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dac50, out _);
             _cvarGet = hooks.CreateWrapper<FnCvarGet>(0x1400d9250, out _);
@@ -46,6 +48,8 @@ namespace QuakePlugins.Core
                 _pr_argc = (int*)0x1418a2a38;
                 _sv_edicts = (EngineEdict**)0x1418beeb0;
                 _pr_edict_size = (uint*)0x1418a29f8;
+                _serverStatic = (EngineServerStatic*)0x141a607d0;
+                _pr_functions = (void**)0x1418a2a28;
             }
         }
 
@@ -64,7 +68,7 @@ namespace QuakePlugins.Core
 
         public static int QCGetIntValue(QCValueOffset offset)
         {
-            unsafe 
+            unsafe
             {
                 return (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset];
             }
@@ -74,7 +78,7 @@ namespace QuakePlugins.Core
         {
             unsafe
             {
-                return (float)(*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset];
+                return (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset];
             }
         }
 
@@ -83,8 +87,8 @@ namespace QuakePlugins.Core
             unsafe
             {
                 float x = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset];
-                float y = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset+1];
-                float z = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset+2];
+                float y = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset + 1];
+                float z = (*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset + 2];
                 return new Vector3(x, y, z);
             }
         }
@@ -96,7 +100,7 @@ namespace QuakePlugins.Core
 
         public static unsafe EngineEdict* QCGetEdictValue(QCValueOffset offset)
         {
-            return QEngine.EdictGetByOffset(QCGetIntValue(offset));
+            return EdictGetByOffset(QCGetIntValue(offset));
         }
 
         public static void QCSetIntValue(QCValueOffset offset, int value)
@@ -113,11 +117,11 @@ namespace QuakePlugins.Core
                 *(float*)&(*(EngineGlobalVars**)_pr_globals.ToPointer())->qcRegisters[(int)offset] = value;
             }
         }
-        public static void QCSetStringValue(QCValueOffset offset,string value)
+        public static void QCSetStringValue(QCValueOffset offset, string value)
         {
             QCSetIntValue(offset, StringCreate(value));
         }
-        public static void QCSetVectorValue(QCValueOffset offset,Vector3 value)
+        public static void QCSetVectorValue(QCValueOffset offset, Vector3 value)
         {
             unsafe
             {
@@ -131,13 +135,13 @@ namespace QuakePlugins.Core
             QCSetIntValue(offset, EdictGetOffset(edict));
         }
 
-        private struct FnBuiltIn { public FuncPtr<int,Void> Value; }
+        private struct FnBuiltIn { public FuncPtr<int, Void> Value; }
         public static void BuiltinCall(int index)
         {
             unsafe
             {
                 var hooks = ReloadedHooks.Instance;
-                hooks.CreateWrapper<FnBuiltIn>(*(long*)(_pr_builtin.ToInt64() + (index * sizeof(void*))),out _).Value.Invoke(0);
+                hooks.CreateWrapper<FnBuiltIn>(*(long*)(_pr_builtin.ToInt64() + index * sizeof(void*)), out _).Value.Invoke(0);
             }
         }
 
@@ -205,7 +209,7 @@ namespace QuakePlugins.Core
         private struct FnCvarRegister { public FuncPtr<IntPtr, IntPtr, IntPtr, IntPtr, int, float, float, bool, IntPtr, IntPtr> Value; }
         private static FnCvarRegister _cvarRegister;
 
-        public static IntPtr CvarRegister(string name,string description,string defaultValue,int flags,float min,float max,bool unknown, IntPtr callback)
+        public static IntPtr CvarRegister(string name, string description, string defaultValue, int flags, float min, float max, bool unknown, IntPtr callback)
         {
             IntPtr namePointer = Marshal.StringToHGlobalAnsi(name);
             IntPtr descriptionPointer = Marshal.StringToHGlobalAnsi(description);
@@ -215,7 +219,7 @@ namespace QuakePlugins.Core
             unsafe
             {
                 var cvarPtr = Marshal.AllocHGlobal(sizeof(Cvar_t));
-                
+
                 _cvarRegister.Value.Invoke(cvarPtr, namePointer, defaultValuePointer, descriptionPointer, flags, min, max, unknown, IntPtr.Zero);
                 *(void**)(0x149e0c178 + 24) = null; // Rebuild cvars
 
@@ -226,7 +230,7 @@ namespace QuakePlugins.Core
         }
 
         [Function(CallingConventions.Microsoft)]
-        private struct FnCvarGet { public FuncPtr<IntPtr,IntPtr,IntPtr> Value; }
+        private struct FnCvarGet { public FuncPtr<IntPtr, IntPtr, IntPtr> Value; }
         private static FnCvarGet _cvarGet;
         public static IntPtr CvarGet(string name)
         {
@@ -256,7 +260,7 @@ namespace QuakePlugins.Core
         [Function(CallingConventions.Microsoft)]
         private struct FnCvarGetFloatValue { public FuncPtr<IntPtr, int, float> Value; }
         private static FnCvarGetFloatValue _cvarGetFloatValue;
-        public static float CvarGetFloatValue(IntPtr cvar,int defaultValue)
+        public static float CvarGetFloatValue(IntPtr cvar, int defaultValue)
         {
             unsafe
             {
@@ -267,7 +271,7 @@ namespace QuakePlugins.Core
         [Function(CallingConventions.Microsoft)]
         private struct FnConsolePrint { public FuncPtr<IntPtr, IntPtr, IntPtr, Void> Value; }
         private static FnConsolePrint _consolePrint;
-        public static void ConsolePrint(string text,uint color)
+        public static void ConsolePrint(string text, uint color)
         {
             IntPtr textPointer = Marshal.StringToHGlobalAnsi(text);
 
@@ -286,7 +290,7 @@ namespace QuakePlugins.Core
 
 
         [Function(CallingConventions.Microsoft)]
-        private struct FnStringGet { public FuncPtr<int,int, IntPtr> Value; }
+        private struct FnStringGet { public FuncPtr<int, int, IntPtr> Value; }
         private static FnStringGet _stringGet;
         public static string StringGet(int index)
         {
@@ -295,9 +299,45 @@ namespace QuakePlugins.Core
                 if (index == 0)
                     return null;
 
-                IntPtr str = _stringGet.Value.Invoke(0,index);
+                IntPtr str = _stringGet.Value.Invoke(0, index);
                 return Marshal.PtrToStringAnsi(str);
             }
+        }
+
+        [Function(CallingConventions.Microsoft)]
+        private struct FnEnterFunction { public FuncPtr<IntPtr, int> Value; }
+        private static FnEnterFunction _enterFunction;
+
+        public static unsafe void QCCallFunction(IntPtr function)
+        {
+            QCRegistersBackup();
+            
+            _enterFunction.Value.Invoke(function);
+
+            QCRegistersRestore();
+        }
+
+        public static unsafe IntPtr QCGetFunctionByName(string name)
+        {
+            var ptr = new IntPtr(*_pr_functions);
+
+            while(true)
+            {
+                var fnName = StringGet(*(int*)(ptr.ToInt64() + 16));
+
+                if (fnName.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    return ptr;
+
+
+                ptr += 1;
+            }
+
+        }
+
+
+        public static unsafe IntPtr QCGetFunction(int functionNumber)
+        {
+            return new IntPtr(*_pr_functions) + functionNumber;
         }
 
         [Function(CallingConventions.Microsoft)]
@@ -308,10 +348,10 @@ namespace QuakePlugins.Core
             var ptr = Marshal.StringToHGlobalAnsi(str);
             unsafe
             {
-                return _stringCreate.Value.Invoke(ptr+str.Length+1, ptr);
+                return _stringCreate.Value.Invoke(ptr + str.Length + 1, ptr);
             }
         }
-        
+
 
         public static unsafe EngineGlobalVars* GetGlobals()
         {
@@ -341,7 +381,7 @@ namespace QuakePlugins.Core
         {
             unsafe
             {
-                return (EngineEdict*)((ulong)*_sv_edicts + (*_pr_edict_size * (uint)number));
+                return (EngineEdict*)((ulong)*_sv_edicts + *_pr_edict_size * (uint)number);
             }
         }
 
@@ -352,5 +392,7 @@ namespace QuakePlugins.Core
                 return Marshal.PtrToStringAuto(new IntPtr(*_g_gamedir));
             }
         }
+
+        public static unsafe EngineServerStatic* ServerStatic => _serverStatic;
     }
 }

@@ -1,6 +1,4 @@
-﻿using QuakePlugins;
-
-namespace QuakePlugins.API.LuaScripting
+﻿namespace QuakePlugins.API
 {
     internal class Console
     {

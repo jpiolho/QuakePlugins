@@ -1,4 +1,4 @@
-﻿using QuakePlugins.Core;
+﻿using QuakePlugins.Engine;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X64;

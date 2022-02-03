@@ -1,4 +1,4 @@
-﻿using QuakePlugins.Core;
+﻿using QuakePlugins.Engine;
 using System;
 using System.Numerics;
 
@@ -58,7 +58,7 @@ namespace QuakePlugins.API
             {
                 unsafe
                 {
-                    retValue = new Edict(0, QEngine.QCGetEdictValue(QEngine.QCValueOffset.Return));
+                    retValue = new Edict(QEngine.QCGetEdictValue(QEngine.QCValueOffset.Return));
                 }
             }
 
@@ -120,6 +120,7 @@ namespace QuakePlugins.API
         public static void WriteEntity(float to, Edict f) => CallBuiltIn(59, to, f);
 
         public static void CvarSet(string cvar, string value) => CallBuiltIn(72, cvar, value);
+        public static void CenterPrint(Edict target, string text) => CallBuiltIn(73, target, text);
 
         public static void LocalSound(Edict entity, string snd) => CallBuiltIn(80, entity, snd);
         public static void DrawPoint(Vector3 point, float colormap, float lifetime, bool depthtest) => CallBuiltIn(81, point, colormap, lifetime, depthtest);

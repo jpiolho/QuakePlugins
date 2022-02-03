@@ -1,9 +1,8 @@
 ﻿using NLua;
-using QuakePlugins.API;
 using QuakePlugins.API.LuaScripting;
 using System;
 using System.Numerics;
-using Console = QuakePlugins.API.LuaScripting.Console;
+using Console = QuakePlugins.API.Console;
 
 namespace QuakePlugins.LuaScripting
 {
@@ -29,6 +28,21 @@ namespace QuakePlugins.LuaScripting
 
             _hooks = new Hooks();
 
+            _state.LoadCLRPackage();
+
+            _state.DoString(@"
+luanet.load_assembly('System.Numerics.Vectors','System.Numerics')
+Vector3 = luanet.import_type('System.Numerics.Vector3')
+
+luanet.load_assembly('QuakePlugins','QuakePlugins.API')
+Game = luanet.import_type('QuakePlugins.API.Game')
+Console = luanet.import_type('QuakePlugins.API.Console')
+Cvars = luanet.import_type('QuakePlugins.API.Cvars')
+QC = luanet.import_type('QuakePlugins.API.QC')
+Server = luanet.import_type('QuakePlugins.API.Server')
+Builtins = luanet.import_type('QuakePlugins.API.Builtins')
+");
+            /*
             // Console
             _state.DoString("Console = {}");
             _state["Console.Print"] = (Action<string, uint?>)Console.Print;
@@ -70,10 +84,17 @@ namespace QuakePlugins.LuaScripting
             _state["QC.GetTime"] = () => QC.Time;
             _state["QC.GetMsgEntity"] = () => QC.MsgEntity;
             _state["QC.SetMsgEntity"] = (Edict e) => QC.MsgEntity = e;
+            _state["QC.CallFunction"] = QC.Call;
 
             // Game
-            _state.DoString("Game = {}");
-            _state["Game.Mod"] = () => Game.Mod;
+
+            
+            //_state["Game"] = typeof(Game);
+            //_state["Game.Mod"] = () => Game.Mod;
+
+
+            _state.DoString("Server = {}");
+            _state["Server.GetClient"] = Server.GetClient;
 
             // Builtins
             _state.DoString("Builtins = {}");
@@ -113,13 +134,14 @@ namespace QuakePlugins.LuaScripting
             _state["Builtins.ByIndexVector"] = Builtins.ByIndexVector;
             _state["Builtins.ByIndexEdict"] = Builtins.ByIndexEdict;
             _state["Builtins.ByIndexInt"] = Builtins.ByIndexInt;
-
+            */
             // Hooks
             _state.DoString("Hooks = {}");
             _state["Hooks.RegisterQC"] = _hooks.RegisterQC;
             _state["Hooks.DeregisterQC"] = _hooks.DeregisterQC;
             _state["Hooks.RegisterQCPost"] = _hooks.RegisterQCPost;
             _state["Hooks.DeregisterQCPost"] = _hooks.DeregisterQCPost;
+
 
 #pragma warning restore CS8974 // Converting method group to non-delegate type
         }
