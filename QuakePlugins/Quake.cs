@@ -14,11 +14,21 @@ namespace QuakePlugins
     {
 
         [Function(CallingConventions.Microsoft)]
-        public delegate int PR_EnterFunction(IntPtr function);
-        [Function(CallingConventions.Microsoft)]
         public delegate void PR_LeaveFunction();
+        private static IAsmHook _pr_leaveFunctionHook;
+        private static IReverseWrapper<PR_LeaveFunction> _pr_leaveFunctionWrapper;
+
+        [Function(CallingConventions.Microsoft)]
+        public delegate int PR_EnterFunction(IntPtr function);
+        private static IHook<PR_EnterFunction> _hook_pr_enterFunctionHook;
+        
         [Function(CallingConventions.Microsoft)]
         public delegate void ED_LoadFromFile(IntPtr name);
+        private static IHook<ED_LoadFromFile> _hook_ed_loadFromFile;
+        
+        [Function(CallingConventions.Microsoft)]
+        public delegate void PrintChat(IntPtr unknown, int nameType, char messageType, IntPtr name, IntPtr message);
+        private static IHook<PrintChat> _hook_printChat;
 
         private static unsafe int MyHook(IntPtr function)
         {
@@ -47,7 +57,7 @@ namespace QuakePlugins
                 }
             }
 
-            return _pr_enterFunctionHook.OriginalFunction(function);
+            return _hook_pr_enterFunctionHook.OriginalFunction(function);
         }
 
         private static unsafe void MyHook2()
@@ -94,13 +104,36 @@ namespace QuakePlugins
                 Quake.PrintConsole("Exception: " + ex.ToString() + "\n", System.Drawing.Color.Red);
             }
 
-            _ed_loadFromFile.OriginalFunction(ptr);
+            _hook_ed_loadFromFile.OriginalFunction(ptr);
         }
 
-        private static IHook<PR_EnterFunction> _pr_enterFunctionHook;
-        private static IHook<ED_LoadFromFile> _ed_loadFromFile;
-        private static IAsmHook _pr_leaveFunctionHook;
-        private static IReverseWrapper<PR_LeaveFunction> _pr_leaveFunctionWrapper;
+
+        private static unsafe void OnPrintChat(IntPtr unknown, int nameType, char messageType, IntPtr name, IntPtr message)
+        {
+            /*
+                This hook isn't ideal since it's hooking into the PrintChat function, but it's an easy way to get it to work
+                with both playfab and listen server
+            */
+
+            var clrName = Marshal.PtrToStringAnsi(name);
+            var clrMessage = Marshal.PtrToStringAnsi(message);
+
+            foreach (var addon in Program._addonsManager.Addons)
+            {
+                try
+                {
+                    addon.RaiseEvent("OnChat",clrName,clrMessage,messageType == 1);
+                }
+                catch (Exception ex)
+                {
+                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
+                }
+            }
+
+            _hook_printChat.OriginalFunction(unknown, nameType, messageType, name, message);
+        }
+
+
 
         public const string PushAllx64 = "push rax\n" +
                                      "push rbx\n" +
@@ -159,7 +192,7 @@ namespace QuakePlugins
 
         public static unsafe void SetupHooks()
         {
-            _pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(MyHook, 0x1401c7390).Activate();
+            _hook_pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(MyHook, 0x1401c7390).Activate();
 
             //Quake.PrintConsole("HOOK: " + Utilities.GetAbsoluteCallMnemonics(MyHook2, out _pr_leaveFunctionWrapper) + "\n");
             // 0x1401c7de8
@@ -175,8 +208,8 @@ namespace QuakePlugins
                 //$"add rsp,8",
             }, 0x1401c7df0, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteFirst).Activate();
 
-
-            _ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, 0x1401c59f0).Activate();
+            _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, 0x14029e610).Activate();
+            _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, 0x1401c59f0).Activate();
         }
 
 

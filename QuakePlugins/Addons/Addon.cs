@@ -42,5 +42,11 @@ namespace QuakePlugins.Addons
             _lua.RaiseQCHookPost(name);
             // TODO: C# Raise QC Hook
         }
+
+        internal void RaiseEvent(string eventName, params object[] args)
+        {
+            _lua.RaiseEvent(eventName, args);
+            // TODO: C# Raise Event
+        }
     }
 }

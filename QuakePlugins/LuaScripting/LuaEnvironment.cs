@@ -141,10 +141,14 @@ Builtins = luanet.import_type('QuakePlugins.API.Builtins')
             _state["Hooks.DeregisterQC"] = _hooks.DeregisterQC;
             _state["Hooks.RegisterQCPost"] = _hooks.RegisterQCPost;
             _state["Hooks.DeregisterQCPost"] = _hooks.DeregisterQCPost;
+            _state["Hooks.Register"] = _hooks.Register;
+            _state["Hooks.Deregister"] = _hooks.Deregister;
 
 
 #pragma warning restore CS8974 // Converting method group to non-delegate type
         }
+
+        
 
         private void LuaState_OnHookException(object sender, NLua.Event.HookExceptionEventArgs e)
         {
@@ -173,6 +177,15 @@ Builtins = luanet.import_type('QuakePlugins.API.Builtins')
 
             foreach (var hook in hookedFunctions)
                 hook.Call();
+        }
+
+        public void RaiseEvent(string eventName, params object[] args)
+        {
+            if (!_hooks.EventHooks.TryGetValue(eventName, out var hookedFunctions))
+                return;
+
+            foreach (var hook in hookedFunctions)
+                hook.Call(args);
         }
 
         public void Dispose()
