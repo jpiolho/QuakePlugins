@@ -18,11 +18,11 @@ namespace QuakePlugins.API
                 if (index < 0 || index > serverStatic->maxclients)
                     throw new ArgumentOutOfRangeException(nameof(index));
 
-                return new ServerClient((EngineClient*)(serverStatic->clients + index).ToPointer());
+                return new ServerClient((EngineClient*)(serverStatic->clients + (index * EngineClient.SizeOf)).ToPointer());
             }
         }
 
-        public static ServerClient[] GetClients(bool active=true)
+        public static ServerClient[] GetClients()
         {
             unsafe
             {
@@ -31,7 +31,7 @@ namespace QuakePlugins.API
                 var array = new ServerClient[serverStatic->maxclients];
 
                 IntPtr client = serverStatic->clients;
-                for (int i = 0; i < array.Length; i++,client += 1)
+                for (int i = 0; i < array.Length; i++,client += EngineClient.SizeOf)
                     array[i] = new ServerClient((EngineClient*)client);
 
                 return array;

@@ -10,6 +10,8 @@ namespace QuakePlugins.Engine.Types
     [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct EngineClient
     {
+        public const int SizeOf = 82232;
+
         [FieldOffset(0)]
         public bool active;
 
