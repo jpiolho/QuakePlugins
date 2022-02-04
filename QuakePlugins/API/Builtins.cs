@@ -81,7 +81,7 @@ namespace QuakePlugins.API
         public static float VLen(Vector3 vector) => CallBuiltIn<float>(12, vector);
         public static float VecToYaw(Vector3 vector) => CallBuiltIn<float>(13, vector);
         public static Edict Spawn() => CallBuiltIn<Edict>(14);
-        public static void Remove(Edict entity) => CallBuiltIn(15);
+        public static void Remove(Edict entity) => CallBuiltIn(15,entity);
         public static void TraceLine(Vector3 v1, Vector3 v2, float nomonsters, Edict forent) => CallBuiltIn(16, v1, v2, nomonsters, forent);
         public static Edict CheckClient() => CallBuiltIn<Edict>(17);
         public static string PrecacheSound(string snd) => CallBuiltIn<string>(19, snd);
