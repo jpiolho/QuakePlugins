@@ -24,7 +24,7 @@ namespace QuakePlugins
 
         static void MainInjected()
         {
-            Debugger.Launch();
+            //Debugger.Launch();
 
             try
             {
