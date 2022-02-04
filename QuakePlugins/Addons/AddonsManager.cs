@@ -1,4 +1,5 @@
 ﻿using QuakePlugins;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -21,6 +22,10 @@ namespace QuakePlugins.Addons
 
             foreach (var folder in new DirectoryInfo(Path.Combine("rerelease","_addons")).GetDirectories())
             {
+                // Skip disabled addons
+                if (folder.Name.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
                 Quake.PrintConsole($"Loading addon '{folder}'...\n");
                 
                 var addon = new Addon(folder.FullName);
