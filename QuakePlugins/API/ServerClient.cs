@@ -40,6 +40,14 @@ namespace QuakePlugins.API
             }
         }
 
+        public bool Active
+        {
+            get
+            {
+                unsafe { return _client->active; }
+            }
+        }
+
         public string Name
         {
             get
