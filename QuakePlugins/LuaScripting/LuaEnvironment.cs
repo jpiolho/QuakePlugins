@@ -41,6 +41,7 @@ Cvars = luanet.import_type('QuakePlugins.API.Cvars')
 QC = luanet.import_type('QuakePlugins.API.QC')
 Server = luanet.import_type('QuakePlugins.API.Server')
 Builtins = luanet.import_type('QuakePlugins.API.Builtins')
+Debug = luanet.import_type('QuakePlugins.API.Debug')
 ");
             /*
             // Console
