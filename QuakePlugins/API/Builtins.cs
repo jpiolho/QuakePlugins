@@ -98,7 +98,7 @@ namespace QuakePlugins.API
         public static void EPrint(Edict e) => CallBuiltIn(31, e);
         public static float WalkMove(float yaw, float dist) => CallBuiltIn<float>(32, yaw, dist);
         public static float DropToFloor() => CallBuiltIn<float>(34);
-        public static void Lightstyle(float style, string value) => CallBuiltIn(35);
+        public static void Lightstyle(float style, string value) => CallBuiltIn(35, style, value);
         public static float CheckBottom(Edict e) => CallBuiltIn<float>(40, e);
         public static float PointContents(Vector3 v) => CallBuiltIn<float>(41, v);
         public static Vector3 Aim(Edict e, float speed) => CallBuiltIn<Vector3>(44, e, speed);
