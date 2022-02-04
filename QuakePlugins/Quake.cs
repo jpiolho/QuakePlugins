@@ -12,63 +12,6 @@ namespace QuakePlugins
 {
     public static class Quake
     {
-        public class Cvar
-        {
-            public IntPtr Pointer { get; set; }
-
-            public float GetFloatValue(int defaultValue)
-            {
-                return Adapters.GetCvarFloatValue(this.Pointer, defaultValue);
-            }
-
-            public string GetStringValue()
-            {
-                var ptr = Adapters.GetCvarStringValue(this.Pointer);
-                return Marshal.PtrToStringAnsi(ptr);
-            }
-        }
-
-        public delegate void SetupInteropDelegate(IntPtr adaptersStructurePointer);
-
-
-        private static class Adapters
-        {
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate void AdapterPrintConsoleFn([MarshalAs(UnmanagedType.LPStr)] string text, uint color);
-            public static AdapterPrintConsoleFn PrintConsole;
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate IntPtr AdapterRegisterCvarFn([MarshalAs(UnmanagedType.LPStr)] string name, [MarshalAs(UnmanagedType.LPStr)] string description, [MarshalAs(UnmanagedType.LPStr)] string defaultValue, int flags, float min, float max);
-            public static AdapterRegisterCvarFn RegisterCvar;
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate float GetCvarFloatValueFn(IntPtr cvar, int defaultValue);
-            public static GetCvarFloatValueFn GetCvarFloatValue;
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate IntPtr GetCvarStringValueFn(IntPtr cvar);
-            public static GetCvarStringValueFn GetCvarStringValue;
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate void StartServerGameFn();
-            public static StartServerGameFn StartServerGame;
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate void ChangeGameFn([MarshalAs(UnmanagedType.LPStr)] string game);
-            public static ChangeGameFn ChangeGame;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct AdaptersStructure
-        {
-            public IntPtr PrintConsole;
-            public IntPtr RegisterCvar;
-            public IntPtr GetCvarFloatValue;
-            public IntPtr GetCvarStringValue;
-            public IntPtr StartServerGame;
-            public IntPtr ChangeGame;
-        };
-
 
         [Function(CallingConventions.Microsoft)]
         public delegate int PR_EnterFunction(IntPtr function);
@@ -213,21 +156,6 @@ namespace QuakePlugins
                                                            "movdqu  xmm7, dqword [rsp + 112]\n" +
                                                            "add rsp, 128";
 
-        public static unsafe void SetupInterop(IntPtr adaptersPointer)
-        {
-            Debugger.Launch();
-
-            QEngine.InitializeQEngine();
-
-            var adapters = Marshal.PtrToStructure<AdaptersStructure>(adaptersPointer);
-
-            Adapters.GetCvarStringValue = Marshal.GetDelegateForFunctionPointer<Adapters.GetCvarStringValueFn>(adapters.GetCvarStringValue);
-            Adapters.StartServerGame = Marshal.GetDelegateForFunctionPointer<Adapters.StartServerGameFn>(adapters.StartServerGame);
-            Adapters.ChangeGame = Marshal.GetDelegateForFunctionPointer<Adapters.ChangeGameFn>(adapters.ChangeGame);
-
-
-
-        }
 
         public static unsafe void SetupHooks()
         {
@@ -251,24 +179,6 @@ namespace QuakePlugins
             _ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, 0x1401c59f0).Activate();
         }
 
-
-
-        public static void StartServerGame()
-        {
-            Adapters.StartServerGame();
-        }
-
-        public static Cvar RegisterCvar(string name, string description, string defaultValue, int flags, float min, float max)
-        {
-            QEngine.CvarRegister(name, description, defaultValue, flags, min, max, false, IntPtr.Zero);
-
-            return null;
-        }
-
-        public static void ChangeGame(string game)
-        {
-            Adapters.ChangeGame(game);
-        }
 
         public static void PrintConsole(string text) => PrintConsole(text, (uint)Color.FromArgb(255, 224, 224, 224).ToArgb());
         public static void PrintConsole(string text, Color color) => PrintConsole(text, (uint)(color.A << 24 | color.B << 16 | color.G << 8 | color.R));
