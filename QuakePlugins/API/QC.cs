@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace QuakePlugins.API
 {
+    /// <apiglobal />
     public static class QC
     {
         public enum Value

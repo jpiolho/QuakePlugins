@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace QuakePlugins.API
 {
-    internal static class Game
+    /// <apiglobal />
+    public static class Game
     {
         public static string Mod => QEngine.GameGetGameDir();
     }

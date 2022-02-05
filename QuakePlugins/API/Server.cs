@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace QuakePlugins.API
 {
+    /// <apiglobal />
     public static class Server
     {
         public static ServerClient GetClient(int index)

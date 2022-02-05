@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace QuakePlugins.API.LuaScripting
 {
-    internal class Hooks
+    /// <apiglobal />
+    public class Hooks
     {
         private Dictionary<string,List<LuaFunction>> _qcHooks;
         private Dictionary<string,List<LuaFunction>> _qcHooksPost;

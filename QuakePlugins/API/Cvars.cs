@@ -3,7 +3,8 @@ using System;
 
 namespace QuakePlugins.API
 {
-    internal class Cvars
+    /// <apiglobal />
+    public class Cvars
     {
         public static Cvar Register(string name, string defaultValue, string description = "", int flags=0,float min=0,float max=1)
         {

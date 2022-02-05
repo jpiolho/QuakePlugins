@@ -12,11 +12,18 @@ using System.Threading.Tasks;
 
 namespace QuakePlugins.API
 {
+    /// <summary>
+    /// An edict represents an object in game. Entity is usually another name for edicts.
+    /// </summary>
+    /// <apitype />
     public class Edict
     {
         private int? _index;
         private unsafe EngineEdict* _edict;
 
+        /// <summary>
+        /// The index of this edict
+        /// </summary>
         public int Index
         {
             get
@@ -30,14 +37,17 @@ namespace QuakePlugins.API
                 }
             }
         }
-        public unsafe EngineEdict* EngineEdict => _edict;
+
+        internal unsafe EngineEdict* EngineEdict => _edict;
 
         internal unsafe Edict(EngineEdict* pointer)
         {
             _edict = pointer;
         }
 
-
+        /// <summary>
+        /// Gets or sets the classname for this edict, based on the field "classname"
+        /// </summary>
         public string Classname
         {
             get { unsafe { return QEngine.StringGet((&_edict->vars)->classname); } }
@@ -45,12 +55,14 @@ namespace QuakePlugins.API
             set { unsafe { (&_edict->vars)->classname = QEngine.StringCreate(value); } }
         }
 
+        /// <summary>
+        /// Gets or sets the origin for this edict, baed on the field "origin"
+        /// </summary>
         public Vector3 Origin
         {
             get { unsafe { return (&_edict->vars)->origin.ToVector3(); } }
             set { unsafe { (&_edict->vars)->origin = value.ToEngineVector(); } }
         }
-
 
 
         public void SetField(string name, string value) => InternalSetField(name, QEngine.StringCreate(value));

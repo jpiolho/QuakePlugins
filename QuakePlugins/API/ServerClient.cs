@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace QuakePlugins.API
 {
+    /// <apitype />
     public class ServerClient
     {
         private unsafe EngineClient* _client;

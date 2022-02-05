@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace QuakePlugins.API
 {
-    internal class Cvar
+    /// <apitype />
+    public class Cvar
     {
         private IntPtr _pointer;
 
@@ -15,17 +16,27 @@ namespace QuakePlugins.API
         {
             _pointer = pointer;
         }
-            
+           
+        /// <summary>
+        /// Gets the string value of this cvar
+        /// </summary>
         public string GetString()
         {
             return QEngine.CvarGetStringValue(_pointer);
         }
 
+        /// <summary>
+        /// Gets the numeric value of this cvar
+        /// </summary>
         public float GetNumber()
         {
             return QEngine.CvarGetFloatValue(_pointer, 0);
         }
 
+        /// <summary>
+        /// Gets the boolean value of this cvar. If value >= 1 then it's considered true.
+        /// </summary>
+        /// <returns></returns>
         public bool GetBool()
         {
             return GetNumber() >= 1;

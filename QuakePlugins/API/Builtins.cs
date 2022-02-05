@@ -4,6 +4,10 @@ using System.Numerics;
 
 namespace QuakePlugins.API
 {
+    /// <summary>
+    /// Provides access to the engine builtins, which are the engine functions that can be called from QuakeC.
+    /// </summary>
+    /// <apiglobal />
     public static class Builtins
     {
         private static void CallBuiltIn(int id, params object[] parameters) => CallBuiltIn<object>(id, parameters);
