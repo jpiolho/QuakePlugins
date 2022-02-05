@@ -11,6 +11,13 @@ namespace QuakePlugins.API
     /// <apiglobal />
     public static class Server
     {
+        /// <summary>
+        /// Gets the current map name
+        /// </summary>
+        public static string Map
+        {
+            get { unsafe { return QEngine.StringGet(QEngine.GetGlobals()->mapname); } }
+        }
         public static ServerClient GetClient(int index)
         {
             unsafe
