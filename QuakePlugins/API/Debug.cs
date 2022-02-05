@@ -15,8 +15,7 @@ namespace QuakePlugins.API
         /// </summary>
         public static void Break(string breakpointName,params object[] args)
         {
-            // Nothing. Just provides a nice breakpoint for the debugger
-            ;
+            Debugger.Break();
         }
     }
 }
