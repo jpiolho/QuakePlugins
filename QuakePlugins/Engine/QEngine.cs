@@ -389,7 +389,7 @@ namespace QuakePlugins.Engine
         {
             unsafe
             {
-                return Marshal.PtrToStringAuto(new IntPtr(*_g_gamedir));
+                return Marshal.PtrToStringUTF8(new IntPtr(*_g_gamedir));
             }
         }
 
