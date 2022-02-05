@@ -88,8 +88,8 @@ namespace QuakePlugins
         private static unsafe void MyHook2()
         {
 
+            IntPtr function = new IntPtr(*(int**)0x1418a2a40);
 
-            IntPtr function = new IntPtr(*(int*)0x1418a2a40);
 
             int nameIndex = *(int*)(function + 16);
 
