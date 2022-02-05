@@ -1,4 +1,5 @@
 ﻿using NLua;
+using QuakePlugins.API;
 using QuakePlugins.API.LuaScripting;
 using System;
 using System.Numerics;
@@ -19,6 +20,7 @@ namespace QuakePlugins.LuaScripting
 
 
         private Hooks _hooks;
+        private Timers _timers;
 
         public void Initialize()
         {
@@ -27,6 +29,7 @@ namespace QuakePlugins.LuaScripting
             _state.HookException += LuaState_OnHookException;
 
             _hooks = new Hooks();
+            _timers = new Timers();
 
             _state.LoadCLRPackage();
 
@@ -145,6 +148,10 @@ Debug = luanet.import_type('QuakePlugins.API.Debug')
             _state["Hooks.Register"] = _hooks.Register;
             _state["Hooks.Deregister"] = _hooks.Deregister;
 
+            _state.DoString("Timers = {}");
+            _state["Timers.In"] = _timers.In;
+            _state["Timers.At"] = _timers.At;
+            _state["Timers.Stop"] = _timers.Stop;
 
 #pragma warning restore CS8974 // Converting method group to non-delegate type
         }
@@ -187,6 +194,11 @@ Debug = luanet.import_type('QuakePlugins.API.Debug')
 
             foreach (var hook in hookedFunctions)
                 hook.Call(args);
+        }
+
+        public void TimersTick()
+        {
+            _timers.Tick();
         }
 
         public void Dispose()

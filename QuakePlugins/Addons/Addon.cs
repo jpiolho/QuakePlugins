@@ -48,5 +48,10 @@ namespace QuakePlugins.Addons
             _lua.RaiseEvent(eventName, args);
             // TODO: C# Raise Event
         }
+
+        internal void TimerTick()
+        {
+            _lua.TimersTick();
+        }
     }
 }

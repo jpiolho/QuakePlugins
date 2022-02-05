@@ -45,6 +45,31 @@ namespace QuakePlugins
             char* name = (char*)((long long)pr_strings + nameIndex);
             */
 
+            if(functionName == "StartFrame")
+            {
+                foreach (var addon in Program._addonsManager.Addons)
+                {
+                    try
+                    {
+                        addon.TimerTick();
+                    }
+                    catch (Exception ex)
+                    {
+                        Quake.PrintConsole("Exception: " + ex.ToString() + "\n", System.Drawing.Color.Red);
+                    }
+
+                    try
+                    {
+                        addon.RaiseEvent("OnStartFrame");
+                    }
+                    catch (Exception ex)
+                    {
+                        Quake.PrintConsole("Exception: " + ex.ToString() + "\n", System.Drawing.Color.Red);
+                    }
+                }
+            }
+
+
             foreach (var addon in Program._addonsManager.Addons)
             {
                 try
