@@ -18,6 +18,10 @@ namespace QuakePlugins.API
         {
             get { unsafe { return QEngine.StringGet(QEngine.GetGlobals()->mapname); } }
         }
+
+        /// <summary>
+        /// Gets a specific client by their index
+        /// </summary>
         public static ServerClient GetClient(int index)
         {
             unsafe
@@ -30,6 +34,9 @@ namespace QuakePlugins.API
             }
         }
 
+        /// <summary>
+        /// Gets a list of all clients in the server. Active or not.
+        /// </summary>
         public static ServerClient[] GetClients()
         {
             unsafe
