@@ -2,6 +2,7 @@
 using QuakePlugins.API;
 using QuakePlugins.API.LuaScripting;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Console = QuakePlugins.API.Console;
 
@@ -147,6 +148,10 @@ Debug = luanet.import_type('QuakePlugins.API.Debug')
             _state["Hooks.DeregisterQCPost"] = _hooks.DeregisterQCPost;
             _state["Hooks.Register"] = _hooks.Register;
             _state["Hooks.Deregister"] = _hooks.Deregister;
+            _state.DoString($@"Hooks.Handling = {{
+    Continue = {(int)Hooks.Handling.Continue},
+    Handled = {(int)Hooks.Handling.Handled}
+}}");
 
             _state.DoString("Timers = {}");
             _state["Timers.In"] = _timers.In;
@@ -169,31 +174,19 @@ Debug = luanet.import_type('QuakePlugins.API.Debug')
         }
 
 
-        public void RaiseQCHook(string name)
+        public Hooks.Handling RaiseQCHook(string name)
         {
-            if (!_hooks.QCHooks.TryGetValue(name, out var hookedFunctions))
-                return;
-
-            foreach (var hook in hookedFunctions)
-                hook.Call();
+            return _hooks.RaiseHooks(_hooks.QCHooks, name);
         }
 
-        public void RaiseQCHookPost(string name)
+        public Hooks.Handling RaiseQCHookPost(string name)
         {
-            if (!_hooks.QCHooksPost.TryGetValue(name, out var hookedFunctions))
-                return;
-
-            foreach (var hook in hookedFunctions)
-                hook.Call();
+            return _hooks.RaiseHooks(_hooks.QCHooksPost, name);
         }
 
-        public void RaiseEvent(string eventName, params object[] args)
+        public Hooks.Handling RaiseEvent(string eventName, params object[] args)
         {
-            if (!_hooks.EventHooks.TryGetValue(eventName, out var hookedFunctions))
-                return;
-
-            foreach (var hook in hookedFunctions)
-                hook.Call(args);
+            return _hooks.RaiseHooks(_hooks.EventHooks, eventName, args);
         }
 
         public void TimersTick()

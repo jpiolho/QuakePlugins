@@ -10,6 +10,13 @@ namespace QuakePlugins.API.LuaScripting
     /// <apiglobal />
     public class Hooks
     {
+        public enum Handling
+        {
+            Continue = 0,
+            Handled = 1
+        }
+
+
         private Dictionary<string,List<LuaFunction>> _qcHooks;
         private Dictionary<string,List<LuaFunction>> _qcHooksPost;
         private Dictionary<string, List<LuaFunction>> _eventHooks;
@@ -71,6 +78,23 @@ namespace QuakePlugins.API.LuaScripting
                 return false;
 
             return hookList.Remove(func);
+        }
+
+
+        internal Handling RaiseHooks(Dictionary<string,List<LuaFunction>> hookList,string name,params object[] arguments)
+        {
+            if (!hookList.TryGetValue(name, out var hookedFunctions))
+                return Handling.Continue;
+
+            foreach (var hook in hookedFunctions)
+            {
+                var returns = hook.Call(arguments);
+
+                if (returns.Length > 0 && (Handling)returns[0] != Handling.Continue)
+                    return (Handling)returns[0];
+            }
+
+            return Handling.Continue;
         }
     }
 }

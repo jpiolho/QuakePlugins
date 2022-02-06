@@ -60,7 +60,8 @@ namespace QuakePlugins
 
                     try
                     {
-                        addon.RaiseEvent("OnStartFrame");
+                        if (addon.RaiseEvent("OnStartFrame") != API.LuaScripting.Hooks.Handling.Continue)
+                            break;
                     }
                     catch (Exception ex)
                     {
@@ -74,7 +75,8 @@ namespace QuakePlugins
             {
                 try
                 {
-                    addon.RaiseQCHook(functionName);
+                    if (addon.RaiseQCHook(functionName) != API.LuaScripting.Hooks.Handling.Continue)
+                        break;
                 }
                 catch(Exception ex)
                 {
@@ -147,7 +149,8 @@ namespace QuakePlugins
             {
                 try
                 {
-                    addon.RaiseEvent("OnChat",clrName,clrMessage,messageType == 1);
+                    if (addon.RaiseEvent("OnChat", clrName, clrMessage, messageType == 1) != API.LuaScripting.Hooks.Handling.Continue)
+                        break;
                 }
                 catch (Exception ex)
                 {

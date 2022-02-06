@@ -1,5 +1,6 @@
 ﻿using NLua;
 using QuakePlugins;
+using QuakePlugins.API.LuaScripting;
 using QuakePlugins.LuaScripting;
 using System;
 using System.IO;
@@ -31,21 +32,21 @@ namespace QuakePlugins.Addons
         }
 
 
-        internal void RaiseQCHook(string name)
+        internal Hooks.Handling RaiseQCHook(string name)
         {
-            _lua.RaiseQCHook(name);
+            return _lua.RaiseQCHook(name);
             // TODO: C# Raise QC Hook
         }
 
-        internal void RaiseQCHookPost(string name)
+        internal Hooks.Handling RaiseQCHookPost(string name)
         {
-            _lua.RaiseQCHookPost(name);
+            return _lua.RaiseQCHookPost(name);
             // TODO: C# Raise QC Hook
         }
 
-        internal void RaiseEvent(string eventName, params object[] args)
+        internal Hooks.Handling RaiseEvent(string eventName, params object[] args)
         {
-            _lua.RaiseEvent(eventName, args);
+            return _lua.RaiseEvent(eventName, args);
             // TODO: C# Raise Event
         }
 
