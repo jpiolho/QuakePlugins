@@ -18,6 +18,7 @@ namespace QuakePlugins.Engine
         internal const long func_enterFunc = 0x1401c7390;
         internal const long func_printChat = 0x14029e610;
         internal const long func_ed_loadFromFile = 0x1401c59f0;
+        internal const long func_getPlayfabGamemode = 0x140374ea0;
         internal const long hook_leaveFunc = 0x1401c7df0;
         internal const long var_executingFunction = 0x1418a2a40;
 
@@ -44,6 +45,7 @@ namespace QuakePlugins.Engine
             _cvarGet = hooks.CreateWrapper<FnCvarGet>(0x1400d9250, out _);
             _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c2550, out _);
             _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c25c0, out _);
+            _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c25c0, out _);
 
 
             unsafe
@@ -398,6 +400,23 @@ namespace QuakePlugins.Engine
                 return Marshal.PtrToStringUTF8(new IntPtr(*_g_gamedir));
             }
         }
+
+
+
+
+
+        [Function(CallingConventions.Microsoft)]
+        private struct FnGameGetGamemodeName { public FuncPtr<IntPtr> Value; }
+        private static FnGameGetGamemodeName _gameGetGamemodeName;
+        public static string GameGetGamemodeName()
+        {
+            unsafe
+            {
+                return Marshal.PtrToStringUTF8(_gameGetGamemodeName.Value.Invoke());
+            }
+        }
+
+        public static string GameCustomGamemodeName { get; set; }
 
         public static unsafe EngineServerStatic* ServerStatic => _serverStatic;
     }

@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace QuakePlugins
 {
@@ -29,6 +30,11 @@ namespace QuakePlugins
         [Function(CallingConventions.Microsoft)]
         public delegate void PrintChat(IntPtr unknown, int nameType, char messageType, IntPtr name, IntPtr message);
         private static IHook<PrintChat> _hook_printChat;
+
+        [Function(CallingConventions.Microsoft)]
+        public delegate IntPtr GetPlayfabGameModeName();
+        internal static IHook<GetPlayfabGameModeName> _hook_getPlayfabGameModeName;
+        
 
         private static unsafe int MyHook(IntPtr function)
         {
@@ -107,6 +113,7 @@ namespace QuakePlugins
 
             try
             {
+                QEngine.GameCustomGamemodeName = null;
                 Program._addonsManager.Start();
             }
             catch (Exception ex)
@@ -142,6 +149,32 @@ namespace QuakePlugins
             }
 
             _hook_printChat.OriginalFunction(unknown, nameType, messageType, name, message);
+        }
+
+
+
+        private static IntPtr _customGamemodeNamePtr;
+        private static string _customGamemodeName;
+        private static unsafe IntPtr OnGetPlayfabGameModeName()
+        {
+            if(_customGamemodeName != QEngine.GameCustomGamemodeName)
+            {
+                if (_customGamemodeNamePtr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(_customGamemodeNamePtr);
+                    _customGamemodeNamePtr = IntPtr.Zero;
+                }
+
+                _customGamemodeName = QEngine.GameCustomGamemodeName;
+                
+                if (!string.IsNullOrEmpty(_customGamemodeName))
+                    _customGamemodeNamePtr = Utils.MarshalStringToHGlobalUTF8(_customGamemodeName);
+            }
+
+            if (_customGamemodeNamePtr != IntPtr.Zero)
+                return _customGamemodeNamePtr;
+
+            return _hook_getPlayfabGameModeName.OriginalFunction();
         }
 
 
@@ -219,6 +252,7 @@ namespace QuakePlugins
 
             _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, QEngine.func_printChat ).Activate();
             _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, QEngine.func_ed_loadFromFile).Activate();
+            _hook_getPlayfabGameModeName = ReloadedHooks.Instance.CreateHook<GetPlayfabGameModeName>(OnGetPlayfabGameModeName, QEngine.func_getPlayfabGamemode).Activate();
         }
 
 

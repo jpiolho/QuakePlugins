@@ -20,6 +20,15 @@ namespace QuakePlugins.API
         }
 
         /// <summary>
+        /// Gets or sets the gamemode name (eg: Deathmatch, Cooperative, Horde, ...)
+        /// </summary>
+        public static string GamemodeName
+        {
+            get { return QEngine.GameGetGamemodeName(); }
+            set { QEngine.GameCustomGamemodeName = value; }
+        }
+
+        /// <summary>
         /// Gets a specific client by their index
         /// </summary>
         public static ServerClient GetClient(int index)

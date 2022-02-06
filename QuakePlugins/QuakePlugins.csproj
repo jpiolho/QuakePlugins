@@ -31,4 +31,8 @@
     <ProjectReference Include="..\QuakePluginsHook\QuakePluginsHook.vcxproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <NativeLibs Remove="Utils.cs" />
+  </ItemGroup>
+
 </Project>
