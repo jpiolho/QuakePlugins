@@ -80,7 +80,7 @@ namespace QuakePlugins
 
         private static unsafe void MyHook2()
         {
-            IntPtr function = new IntPtr(*(int**)0x1418a2a40);
+            IntPtr function = new IntPtr(*(int**)QEngine.var_executingFunction);
             int nameIndex = *(int*)(function + 16);
 
             var functionName = QEngine.StringGet(nameIndex);
@@ -203,10 +203,8 @@ namespace QuakePlugins
 
         public static unsafe void SetupHooks()
         {
-            _hook_pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(MyHook, 0x1401c7390).Activate();
+            _hook_pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(MyHook, QEngine.func_enterFunc).Activate();
 
-            //Quake.PrintConsole("HOOK: " + Utilities.GetAbsoluteCallMnemonics(MyHook2, out _pr_leaveFunctionWrapper) + "\n");
-            // 0x1401c7de8
             _pr_leaveFunctionHook = new AsmHook(new string[]
             {
                 $"use64",
@@ -217,10 +215,10 @@ namespace QuakePlugins
                 PopSseCallConvRegistersx64,
                 PopAllx64,
                 //$"add rsp,8",
-            }, 0x1401c7df0, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteFirst).Activate();
+            }, QEngine.hook_leaveFunc, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteFirst).Activate();
 
-            _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, 0x14029e610).Activate();
-            _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, 0x1401c59f0).Activate();
+            _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, QEngine.func_printChat ).Activate();
+            _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, QEngine.func_ed_loadFromFile).Activate();
         }
 
 

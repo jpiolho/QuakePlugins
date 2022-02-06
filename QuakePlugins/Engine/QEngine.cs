@@ -15,6 +15,12 @@ namespace QuakePlugins.Engine
 {
     internal class QEngine
     {
+        internal const long func_enterFunc = 0x1401c7390;
+        internal const long func_printChat = 0x14029e610;
+        internal const long func_ed_loadFromFile = 0x1401c59f0;
+        internal const long hook_leaveFunc = 0x1401c7df0;
+        internal const long var_executingFunction = 0x1418a2a40;
+
         private static IntPtr _pr_globals;
         private static IntPtr _pr_builtin;
         private static unsafe int* _pr_argc;
