@@ -155,7 +155,7 @@ namespace QuakePlugins.DocsGenerator
                 if(hasSetMethod)
                     block.Add(new MdHeading(property.Name, 4));
                 else
-                    block.Add(new MdHeading(property.Name + " (Read-only)", 3));
+                    block.Add(new MdHeading(property.Name + " (Read-only)", 4));
 
                 block.Add(new MdParagraph("Type: ",new MdCodeSpan(GetTypeName(property.PropertyType))));
 
