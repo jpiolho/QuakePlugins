@@ -34,16 +34,7 @@ namespace QuakePlugins
         {
             int nameIndex = *(int*)(function + 16);
 
-            char** pr_strings = *(char***)(0x141a4a600);
-            char* name = (char*)((long)pr_strings + nameIndex);
-
-            string functionName = Marshal.PtrToStringAnsi(new IntPtr(name));
-
-            //Quake.PrintConsole("QC Enter Function: " + functionName + "\n");
-            /*
-            char** pr_strings = *((char***)0x141a4a600);
-            char* name = (char*)((long long)pr_strings + nameIndex);
-            */
+            var functionName = QEngine.StringGet(nameIndex);
 
             if(functionName == "StartFrame")
             {
@@ -89,18 +80,10 @@ namespace QuakePlugins
 
         private static unsafe void MyHook2()
         {
-
             IntPtr function = new IntPtr(*(int**)0x1418a2a40);
-
-
             int nameIndex = *(int*)(function + 16);
 
-            char** pr_strings = *(char***)(0x141a4a600);
-            char* name = (char*)((long)pr_strings + nameIndex);
-
-            string functionName = Marshal.PtrToStringAnsi(new IntPtr(name));
-
-            //Quake.PrintConsole("QC Leave Function: " + functionName + "\n");
+            var functionName = QEngine.StringGet(nameIndex);
 
 
             foreach (var addon in Program._addonsManager.Addons)
