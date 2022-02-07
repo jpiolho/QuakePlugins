@@ -48,6 +48,7 @@ namespace QuakePlugins.Engine
             _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c25c0, out _);
             _qcExecuteProgram = hooks.CreateWrapper<FnQCExecuteProgram>(0x1401c74d0, out _);
             _qcFindFunction = hooks.CreateWrapper<FnQCFindFunction>(0x1401c2df0, out _);
+            _edictGetField = hooks.CreateWrapper<FnEdictGetField>(0x1401c2bd0, out _);
 
             unsafe
             {
@@ -316,6 +317,29 @@ namespace QuakePlugins.Engine
             }
         }
 
+
+        [Function(CallingConventions.Microsoft)]
+        private struct FnEdictGetField { public FuncPtr<IntPtr, IntPtr> Value; }
+        private static FnEdictGetField _edictGetField;
+
+        public static unsafe EngineField* EdictGetField(string field)
+        {
+            unsafe
+            {
+                var ptr = Utils.MarshalStringToHGlobalUTF8(field);
+
+                try
+                {
+                    return (EngineField*)_edictGetField.Value.Invoke(ptr).ToPointer();
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(ptr);
+                }
+            }
+        }
+
+
         [Function(CallingConventions.Microsoft)]
         private struct FnEnterFunction { public FuncPtr<IntPtr, int> Value; }
         private static FnEnterFunction _enterFunction;
@@ -362,9 +386,9 @@ namespace QuakePlugins.Engine
         }
 
 
-        public static unsafe IntPtr QCGetFunction(int functionNumber)
+        public static unsafe EngineQCFunction* QCGetFunction(int functionNumber)
         {
-            return new IntPtr(*_pr_functions) + functionNumber;
+            return (EngineQCFunction*)(*_pr_functions + (functionNumber * sizeof(EngineQCFunction)));
         }
 
         [Function(CallingConventions.Microsoft)]

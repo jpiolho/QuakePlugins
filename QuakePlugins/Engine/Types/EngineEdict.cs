@@ -3,7 +3,7 @@
 namespace QuakePlugins.Engine.Types
 {
     [StructLayout(LayoutKind.Explicit)]
-    public struct EngineEdict
+    internal struct EngineEdict
     {
         [FieldOffset(216)] public EngineEntityVars vars;
     }

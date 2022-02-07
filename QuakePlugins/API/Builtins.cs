@@ -16,38 +16,39 @@ namespace QuakePlugins.API
         /// </summary>
         private static TReturnType CallBuiltIn<TReturnType>(int id, params object[] parameters)
         {
-            QEngine.QCRegistersBackup();
-
-            Utils.SetQCGenericParameters(parameters);
-            
-            QEngine.BuiltinCall(id);
-
-            object retValue = null;
-            if (typeof(TReturnType) == typeof(float))
-                retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return);
-            else if (typeof(TReturnType) == typeof(bool))
-                retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return) != 0;
-            else if (typeof(TReturnType) == typeof(int))
-                retValue = QEngine.QCGetIntValue(QEngine.QCValueOffset.Return);
-            else if (typeof(TReturnType) == typeof(QCFunction))
-                retValue = QEngine.QCGetFunction(QEngine.QCGetIntValue(QEngine.QCValueOffset.Return));
-            else if (typeof(TReturnType) == typeof(bool))
-                retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return) != 0;
-            else if (typeof(TReturnType) == typeof(Vector3))
-                retValue = QEngine.QCGetVectorValue(QEngine.QCValueOffset.Return);
-            else if (typeof(TReturnType) == typeof(string))
-                retValue = QEngine.QCGetStringValue(QEngine.QCValueOffset.Return);
-            else if (typeof(TReturnType) == typeof(Edict))
+            unsafe
             {
-                unsafe
+                QEngine.QCRegistersBackup();
+
+                Utils.SetQCGenericParameters(parameters);
+
+                QEngine.BuiltinCall(id);
+
+                object retValue = null;
+
+                if (typeof(TReturnType) == typeof(float))
+                    retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return);
+                else if (typeof(TReturnType) == typeof(bool))
+                    retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return) != 0;
+                else if (typeof(TReturnType) == typeof(int))
+                    retValue = QEngine.QCGetIntValue(QEngine.QCValueOffset.Return);
+                else if (typeof(TReturnType) == typeof(QCFunction))
+                    retValue = new QCFunction(QEngine.QCGetFunction(QEngine.QCGetIntValue(QEngine.QCValueOffset.Return)));
+                else if (typeof(TReturnType) == typeof(bool))
+                    retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return) != 0;
+                else if (typeof(TReturnType) == typeof(Vector3))
+                    retValue = QEngine.QCGetVectorValue(QEngine.QCValueOffset.Return);
+                else if (typeof(TReturnType) == typeof(string))
+                    retValue = QEngine.QCGetStringValue(QEngine.QCValueOffset.Return);
+                else if (typeof(TReturnType) == typeof(Edict))
                 {
                     retValue = new Edict(QEngine.QCGetEdictValue(QEngine.QCValueOffset.Return));
                 }
+
+                QEngine.QCRegistersRestore();
+
+                return (TReturnType)retValue;
             }
-
-            QEngine.QCRegistersRestore();
-
-            return (TReturnType)retValue;
         }
 
         /// <summary>

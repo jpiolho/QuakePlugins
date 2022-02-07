@@ -77,27 +77,38 @@ namespace QuakePlugins.API
             }
         }
 
-        public string GetFieldString(string name) => QEngine.StringGet((int)InternalGetField(name));
-        public int GetFieldInt(string name) => (int)InternalGetField(name);
-        public float GetFieldFloat(string name) => (float)InternalGetField(name);
+        public string GetFieldString(string name) { unsafe { return QEngine.StringGet(*(int*)InternalGetField(name)); } }
+        public int GetFieldInt(string name) { unsafe { return *(int*)InternalGetField(name); } }
+        public float GetFieldFloat(string name) { unsafe { return *(float*)InternalGetField(name); } }
         public Vector3 GetFieldVector(string name)
         {
-            var vec = (EngineVector3)InternalGetField(name);
-            return new Vector3(vec.X, vec.Y, vec.Z);
+            unsafe
+            {
+                var vec = (EngineVector3*)InternalGetField(name);
+                return new Vector3(vec->X, vec->Y, vec->Z);
+            }
         }
         public Edict GetFieldEdict(string name)
         {
-            unsafe {
+            unsafe
+            {
                 var ptr = QEngine.EdictGetByOffset(GetFieldInt(name));
                 return new Edict(ptr);
             }
         }
-
+        public QCFunction GetFieldFunction(string name)
+        {
+            unsafe
+            {
+                return new QCFunction(QEngine.QCGetFunction(GetFieldInt(name)));
+            }
+        }
 
         private void InternalSetField<TValue>(string name, params TValue[] values) where TValue : unmanaged
         {
             unsafe
             {
+                /*
                 var field = EngineEntityVars.GetFieldByName(name);
 
                 if (field == null)
@@ -105,17 +116,34 @@ namespace QuakePlugins.API
 
                 var fieldOffset = Marshal.OffsetOf<EngineEntityVars>(field.Name);
                 var varOffset = Marshal.OffsetOf<EngineEdict>("vars");
+                */
+
+                var field = QEngine.EdictGetField(name);
+                if (field == null)
+                    return;
+
+                var ptr = GetFieldPointer(field);
 
                 for (int i = 0; i < values.Length; i++)
-                    *(TValue*)((long)EngineEdict + varOffset.ToInt64() + fieldOffset.ToInt64() + (i * sizeof(int))) = values[i];
+                    *(TValue*)((long)ptr + i * sizeof(int)) = values[i];
             }
         }
-        private object InternalGetField(string name)
+        private unsafe void* InternalGetField(string name)
         {
             unsafe
             {
-                return EngineEntityVars.GetFieldByName(name)?.GetValue(_edict->vars) ?? null;
+                var field = QEngine.EdictGetField(name);
+                if (field == null)
+                    return null;
+
+                return GetFieldPointer(field);
             }
+        }
+
+
+        private unsafe void* GetFieldPointer(EngineField* field)
+        {
+            return (void*)((long)(&EngineEdict->vars) + (field->offset * 4));
         }
     }
 }
