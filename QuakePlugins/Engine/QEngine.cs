@@ -29,14 +29,14 @@ namespace QuakePlugins.Engine
         private static unsafe uint* _pr_edict_size;
         private static unsafe char*** _g_gamedir;
         private static unsafe EngineServerStatic* _serverStatic;
-        private static unsafe void** _pr_functions;
+        private static unsafe EngineQCFunction** _pr_functions;
 
-        private static byte[] _stack;
-        private static int _qc_argcbackup;
+        private static Stack<(byte[],int)> _stack;
+        //private static int _qc_argcbackup;
 
         public static void InitializeQEngine()
         {
-            _stack = new byte[112];
+            _stack = new Stack<(byte[],int)>(); // new byte[112];
 
             var hooks = ReloadedHooks.Instance;
             _consolePrint = hooks.CreateWrapper<FnConsolePrint>(0x1400d69a0, out _);
@@ -46,7 +46,8 @@ namespace QuakePlugins.Engine
             _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c2550, out _);
             _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c25c0, out _);
             _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c25c0, out _);
-
+            _qcExecuteProgram = hooks.CreateWrapper<FnQCExecuteProgram>(0x1401c74d0, out _);
+            _qcFindFunction = hooks.CreateWrapper<FnQCFindFunction>(0x1401c2df0, out _);
 
             unsafe
             {
@@ -57,7 +58,7 @@ namespace QuakePlugins.Engine
                 _sv_edicts = (EngineEdict**)0x1418beeb0;
                 _pr_edict_size = (uint*)0x1418a29f8;
                 _serverStatic = (EngineServerStatic*)0x141a607d0;
-                _pr_functions = (void**)0x1418a2a28;
+                _pr_functions = (EngineQCFunction**)0x1418a2a28;
             }
         }
 
@@ -157,8 +158,10 @@ namespace QuakePlugins.Engine
         {
             unsafe
             {
-                _qc_argcbackup = *_pr_argc;
-                Marshal.Copy(new IntPtr(*(EngineGlobalVars**)_pr_globals.ToPointer()), _stack, 0, 28 * sizeof(int));
+                var backup = new byte[112];
+                Marshal.Copy(new IntPtr(*(EngineGlobalVars**)_pr_globals.ToPointer()), backup, 0, 28 * sizeof(int));
+
+                _stack.Push((backup,*_pr_argc));
             }
         }
 
@@ -166,8 +169,9 @@ namespace QuakePlugins.Engine
         {
             unsafe
             {
-                *_pr_argc = _qc_argcbackup;
-                Marshal.Copy(_stack, 0, new IntPtr(*(EngineGlobalVars**)_pr_globals.ToPointer()), 28 * sizeof(int));
+                var backup = _stack.Pop();
+                *_pr_argc = backup.Item2;
+                Marshal.Copy(backup.Item1, 0, new IntPtr(*(EngineGlobalVars**)_pr_globals.ToPointer()), 28 * sizeof(int));
             }
         }
 
@@ -308,7 +312,7 @@ namespace QuakePlugins.Engine
                     return null;
 
                 IntPtr str = _stringGet.Value.Invoke(0, index);
-                return Marshal.PtrToStringAnsi(str);
+                return Marshal.PtrToStringUTF8(str);
             }
         }
 
@@ -316,30 +320,45 @@ namespace QuakePlugins.Engine
         private struct FnEnterFunction { public FuncPtr<IntPtr, int> Value; }
         private static FnEnterFunction _enterFunction;
 
-        public static unsafe void QCCallFunction(IntPtr function)
+        [Function(CallingConventions.Microsoft)]
+        private struct FnQCExecuteProgram { public FuncPtr<int, Void> Value; }
+        private static FnQCExecuteProgram _qcExecuteProgram;
+
+        public static unsafe void QCCallFunction(EngineQCFunction* function)
         {
             QCRegistersBackup();
-            
-            _enterFunction.Value.Invoke(function);
+
+            var debug1 = new IntPtr(_pr_functions);
+            var debug2 = *(long*)_pr_functions;
+            var debug3 = new IntPtr(function);
+
+            var functionIndex = QCFunctionPointerToIndex(function);
+            _qcExecuteProgram.Value.Invoke(functionIndex);
 
             QCRegistersRestore();
         }
 
-        public static unsafe IntPtr QCGetFunctionByName(string name)
+        public static unsafe int QCFunctionPointerToIndex(EngineQCFunction* function)
         {
-            var ptr = new IntPtr(*_pr_functions);
+            return (int)(((long)function - *(long*)_pr_functions) / sizeof(EngineQCFunction));
+        }
 
-            while(true)
+        [Function(CallingConventions.Microsoft)]
+        private struct FnQCFindFunction { public FuncPtr<IntPtr, IntPtr> Value; }
+        private static FnQCFindFunction _qcFindFunction;
+        public static unsafe EngineQCFunction* QCGetFunctionByName(string name)
+        {
+            var str = Utils.MarshalStringToHGlobalUTF8(name);
+
+            try
             {
-                var fnName = StringGet(*(int*)(ptr.ToInt64() + 16));
-
-                if (fnName.Equals(name, StringComparison.OrdinalIgnoreCase))
-                    return ptr;
-
-
-                ptr += 1;
+                var debug1 = _qcFindFunction.Value.Invoke(str);
+                return (EngineQCFunction*)debug1.ToPointer();
             }
-
+            finally
+            {
+                Marshal.FreeHGlobal(str);
+            }
         }
 
 

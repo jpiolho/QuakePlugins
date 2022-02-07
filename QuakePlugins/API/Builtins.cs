@@ -18,31 +18,8 @@ namespace QuakePlugins.API
         {
             QEngine.QCRegistersBackup();
 
-            QEngine.QCSetArgumentCount(parameters.Length);
-
-            var offset = QEngine.QCValueOffset.Parameter0;
-            for (var i = 0; i < parameters.Length && i < 8; i++, offset = (QEngine.QCValueOffset)((int)offset + ((int)QEngine.QCValueOffset.Parameter1 - (int)QEngine.QCValueOffset.Parameter0)))
-            {
-                // Special case for null
-                if (parameters[i] == null)
-                {
-                    QEngine.QCSetIntValue(offset, 0);
-                    break;
-                }
-
-                switch (parameters[i])
-                {
-                    case float valueFloat: QEngine.QCSetFloatValue(offset, valueFloat); break;
-                    case string valueString: QEngine.QCSetStringValue(offset, valueString); break;
-                    case Vector3 valueVector: QEngine.QCSetVectorValue(offset, valueVector); break;
-                    case Edict valueEdict: unsafe { QEngine.QCSetEdictValue(offset, valueEdict.EngineEdict); } break;
-                    case int valueInt: QEngine.QCSetIntValue(offset, valueInt); break;
-                    case bool valueBool: QEngine.QCSetFloatValue(offset, valueBool ? 1 : 0); break;
-                    default:
-                        throw new Exception($"Unsupported parameter type: {parameters[i].GetType()}");
-                }
-            }
-
+            Utils.SetQCGenericParameters(parameters);
+            
             QEngine.BuiltinCall(id);
 
             object retValue = null;
@@ -52,6 +29,8 @@ namespace QuakePlugins.API
                 retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return) != 0;
             else if (typeof(TReturnType) == typeof(int))
                 retValue = QEngine.QCGetIntValue(QEngine.QCValueOffset.Return);
+            else if (typeof(TReturnType) == typeof(QCFunction))
+                retValue = QEngine.QCGetFunction(QEngine.QCGetIntValue(QEngine.QCValueOffset.Return));
             else if (typeof(TReturnType) == typeof(bool))
                 retValue = QEngine.QCGetFloatValue(QEngine.QCValueOffset.Return) != 0;
             else if (typeof(TReturnType) == typeof(Vector3))

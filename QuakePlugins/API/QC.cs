@@ -25,10 +25,30 @@ namespace QuakePlugins.API
             Parameter7 = 25
         }
 
-        public static void Call(string name,params object[] parameters)
+        /// <summary>
+        /// Calls a QC function based on name.
+        /// </summary>
+        public static void CallFunction(string name,params object[] parameters)
         {
-            var func = QEngine.QCGetFunctionByName(name);
-            QEngine.QCCallFunction(func);
+            unsafe
+            {
+                var func = QEngine.QCGetFunctionByName(name);
+
+                var debug1 = new IntPtr(func);
+
+                QEngine.QCCallFunction(func);
+            }
+        }
+
+        /// <summary>
+        /// Finds a QC function by name and returns a <see cref="QCFunction"/> object.
+        /// </summary>
+        public static QCFunction FindFunction(string name)
+        {
+            unsafe
+            {
+                return new QCFunction(QEngine.QCGetFunctionByName(name));
+            }
         }
 
         public static float GetFloat(Value location)
