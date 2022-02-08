@@ -21,6 +21,7 @@ namespace QuakePlugins.Engine
         internal const long func_getPlayfabGamemode = 0x140374ea0;
         internal const long hook_leaveFunc = 0x1401c7df0;
         internal const long var_executingFunction = 0x1418a2a40;
+        internal const long func_r_newMap = 0x14031a2c0;
 
         private static IntPtr _pr_globals;
         private static IntPtr _pr_builtin;
@@ -30,6 +31,7 @@ namespace QuakePlugins.Engine
         private static unsafe char*** _g_gamedir;
         private static unsafe EngineServerStatic* _serverStatic;
         private static unsafe EngineQCFunction** _pr_functions;
+        private static unsafe void* _client_worldmodel;
 
         private static Stack<(byte[],int)> _stack;
         //private static int _qc_argcbackup;
@@ -60,6 +62,7 @@ namespace QuakePlugins.Engine
                 _pr_edict_size = (uint*)0x1418a29f8;
                 _serverStatic = (EngineServerStatic*)0x141a607d0;
                 _pr_functions = (EngineQCFunction**)0x1418a2a28;
+                _client_worldmodel = (void*)0x149dbe838;
             }
         }
 
@@ -448,6 +451,7 @@ namespace QuakePlugins.Engine
 
 
 
+
         [Function(CallingConventions.Microsoft)]
         private struct FnGameGetGamemodeName { public FuncPtr<IntPtr> Value; }
         private static FnGameGetGamemodeName _gameGetGamemodeName;
@@ -462,5 +466,8 @@ namespace QuakePlugins.Engine
         public static string GameCustomGamemodeName { get; set; }
 
         public static unsafe EngineServerStatic* ServerStatic => _serverStatic;
+
+
+        public static unsafe void* ClientWorldModel => _client_worldmodel;
     }
 }

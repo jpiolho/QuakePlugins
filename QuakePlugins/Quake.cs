@@ -34,7 +34,13 @@ namespace QuakePlugins
         [Function(CallingConventions.Microsoft)]
         public delegate IntPtr GetPlayfabGameModeName();
         internal static IHook<GetPlayfabGameModeName> _hook_getPlayfabGameModeName;
+
+        [Function(CallingConventions.Microsoft)]
+        public delegate void R_NewMap();
+        internal static IHook<R_NewMap> _hook_r_newMap;
+
         
+
 
         private static unsafe int MyHook(IntPtr function)
         {
@@ -127,7 +133,8 @@ namespace QuakePlugins
             {
                 try
                 {
-                    addon.RaiseEvent("OnAfterEntitiesLoaded");
+                    if (addon.RaiseEvent("OnAfterEntitiesLoaded") != API.LuaScripting.Hooks.Handling.Continue)
+                        break;
                 }
                 catch (Exception ex)
                 {
@@ -163,6 +170,25 @@ namespace QuakePlugins
             _hook_printChat.OriginalFunction(unknown, nameType, messageType, name, message);
         }
 
+
+        private static unsafe void OnClientNewMap()
+        {
+
+            foreach (var addon in Program._addonsManager.Addons)
+            {
+                try
+                {
+                    if (addon.RaiseEvent("OnClientNewMap") != API.LuaScripting.Hooks.Handling.Continue)
+                        break;
+                }
+                catch (Exception ex)
+                {
+                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
+                }
+            }
+
+            _hook_r_newMap.OriginalFunction();
+        }
 
 
         private static IntPtr _customGamemodeNamePtr;
@@ -265,6 +291,7 @@ namespace QuakePlugins
             _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, QEngine.func_printChat ).Activate();
             _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, QEngine.func_ed_loadFromFile).Activate();
             _hook_getPlayfabGameModeName = ReloadedHooks.Instance.CreateHook<GetPlayfabGameModeName>(OnGetPlayfabGameModeName, QEngine.func_getPlayfabGamemode).Activate();
+            _hook_r_newMap = ReloadedHooks.Instance.CreateHook<R_NewMap>(OnClientNewMap, QEngine.func_r_newMap).Activate();
         }
 
 
