@@ -25,6 +25,18 @@ namespace QuakePlugins.API
             Parameter7 = 25
         }
 
+        public enum FieldType
+        {
+            Void = 0,
+            String = 1,
+            Float = 2,
+            Vector = 3,
+            Entity = 4,
+            Field = 5,
+            Function = 6,
+            Pointer = 7
+        }
+
         /// <summary>
         /// Calls a QC function based on name.
         /// </summary>
@@ -109,6 +121,21 @@ namespace QuakePlugins.API
             }
         }
 
+
+        /// <summary>
+        /// Returns the type of an entity field.
+        /// </summary>
+        public static FieldType GetFieldType(string fieldName)
+        {
+            unsafe
+            {
+                var field = QEngine.EdictGetField(fieldName);
+                if (field == null)
+                    return FieldType.Void;
+
+                return (FieldType)field->type;
+            }
+        }
 
         public static Edict Self
         {
