@@ -122,6 +122,18 @@ namespace QuakePlugins
             }
 
             _hook_ed_loadFromFile.OriginalFunction(ptr);
+
+            foreach (var addon in Program._addonsManager.Addons)
+            {
+                try
+                {
+                    addon.RaiseEvent("OnAfterEntitiesLoaded");
+                }
+                catch (Exception ex)
+                {
+                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
+                }
+            }
         }
 
 
