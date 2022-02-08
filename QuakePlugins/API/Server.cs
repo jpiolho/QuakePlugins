@@ -61,5 +61,13 @@ namespace QuakePlugins.API
                 return array;
             }
         }
+
+        public static int MaxClients
+        {
+            get
+            {
+                unsafe { return QEngine.ServerStatic->maxclients; }
+            }
+        }
     }
 }
