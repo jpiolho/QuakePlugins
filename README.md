@@ -4,6 +4,7 @@ An engine mod for Quake Enhanced that adds plugin/scripting capabilities via C# 
 **This is a work in progress and is not ready for general use. The code is extremely messy at the moment since right now it's trying to be a proof of concept**
 
 Plugins repo: [QuakePlugins.Plugins](https://github.com/jpiolho/QuakePlugins.Plugins)
+Some documentation: [Wiki](https://github.com/jpiolho/QuakePlugins/wiki)
 
 ## How does this work?
 
