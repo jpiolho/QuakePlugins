@@ -42,7 +42,7 @@ namespace QuakePlugins
         
 
 
-        private static unsafe int MyHook(IntPtr function)
+        private static unsafe int Hook_QC_StartFunction(IntPtr function)
         {
             int nameIndex = *(int*)(function + 16);
 
@@ -74,44 +74,24 @@ namespace QuakePlugins
             }
 
 
-            foreach (var addon in Program._addonsManager.Addons)
-            {
-                try
-                {
-                    if (addon.RaiseQCHook(functionName) != API.LuaScripting.Hooks.Handling.Continue)
-                        break;
-                }
-                catch(Exception ex)
-                {
-                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
-                }
-            }
+            var overrideStatementIndex = ExecuteQCHook(functionName);
+            
+            var originalStatementIndex = _hook_pr_enterFunctionHook.OriginalFunction(function);
+            
+            if(overrideStatementIndex.HasValue)
+                return overrideStatementIndex.Value - 1;
 
-            return _hook_pr_enterFunctionHook.OriginalFunction(function);
+            return originalStatementIndex;
         }
 
-        private static unsafe void MyHook2()
+        private static unsafe void Hook_QC_EndFunction()
         {
             IntPtr function = new IntPtr(*(int**)QEngine.var_executingFunction);
             int nameIndex = *(int*)(function + 16);
 
             var functionName = QEngine.StringGet(nameIndex);
 
-
-            foreach (var addon in Program._addonsManager.Addons)
-            {
-                try
-                {
-                    addon.RaiseQCHookPost(functionName);
-                }
-                catch (Exception ex)
-                {
-                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
-                }
-            }
-
-            ;
-            //Quake.PrintConsole("QC Leave hooked\n");
+            ExecuteQCHookPost(functionName);
         }
 
         private static unsafe void OnLoadEdictsFromFile(IntPtr ptr)
@@ -274,7 +254,7 @@ namespace QuakePlugins
 
         public static unsafe void SetupHooks()
         {
-            _hook_pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(MyHook, QEngine.func_enterFunc).Activate();
+            _hook_pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(Hook_QC_StartFunction, QEngine.func_enterFunc).Activate();
 
             _pr_leaveFunctionHook = new AsmHook(new string[]
             {
@@ -282,7 +262,7 @@ namespace QuakePlugins
                 //$"sub rsp,8",
                 PushAllx64,
                 PushSseCallConvRegistersx64,
-                $"{Utilities.GetAbsoluteCallMnemonics(MyHook2,out _pr_leaveFunctionWrapper)}",
+                $"{Utilities.GetAbsoluteCallMnemonics(Hook_QC_EndFunction,out _pr_leaveFunctionWrapper)}",
                 PopSseCallConvRegistersx64,
                 PopAllx64,
                 //$"add rsp,8",
@@ -300,6 +280,53 @@ namespace QuakePlugins
         public static void PrintConsole(string text, uint color)
         {
             QEngine.ConsolePrint(text, color);
+        }
+
+
+        private static int? ExecuteQCHook(string name,params object[] args)
+        {
+            foreach (var addon in Program._addonsManager.Addons)
+            {
+                try
+                {
+                    var result = addon.RaiseQCHook(name);
+
+                    if (result == API.LuaScripting.Hooks.Handling.Handled)
+                        break;
+
+                    if(result == API.LuaScripting.Hooks.Handling.Superceded)
+                        return EngineUtils.QCGetReturnStatementIndex();
+                }
+                catch (Exception ex)
+                {
+                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
+                }
+            }
+
+            return null;
+        }
+
+        private static int? ExecuteQCHookPost(string name, params object[] args)
+        {
+            foreach (var addon in Program._addonsManager.Addons)
+            {
+                try
+                {
+                    var result = addon.RaiseQCHookPost(name);
+
+                    if (result == API.LuaScripting.Hooks.Handling.Handled)
+                        break;
+
+                    if (result == API.LuaScripting.Hooks.Handling.Superceded)
+                        return EngineUtils.QCGetReturnStatementIndex();
+                }
+                catch (Exception ex)
+                {
+                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -32,6 +32,7 @@ namespace QuakePlugins.Engine
         private static unsafe EngineServerStatic* _serverStatic;
         private static unsafe EngineQCFunction** _pr_functions;
         private static unsafe void* _client_worldmodel;
+        private static unsafe EngineQCStatement** _pr_statements;
 
         private static Stack<(byte[],int)> _stack;
         //private static int _qc_argcbackup;
@@ -63,6 +64,7 @@ namespace QuakePlugins.Engine
                 _serverStatic = (EngineServerStatic*)0x141a607d0;
                 _pr_functions = (EngineQCFunction**)0x1418a2a28;
                 _client_worldmodel = (void*)0x149dbe838;
+                _pr_statements = (EngineQCStatement**)0x1418a2a18;
             }
         }
 
@@ -469,5 +471,10 @@ namespace QuakePlugins.Engine
 
 
         public static unsafe void* ClientWorldModel => _client_worldmodel;
+
+        public static unsafe EngineQCStatement* QCGetStatement(int index)
+        {
+            return &(*_pr_statements)[index];
+        }
     }
 }

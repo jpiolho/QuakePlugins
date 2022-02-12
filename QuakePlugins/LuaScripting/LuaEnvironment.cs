@@ -149,10 +149,10 @@ Client = luanet.import_type('QuakePlugins.API.Client')
             _state["Hooks.DeregisterQCPost"] = _hooks.DeregisterQCPost;
             _state["Hooks.Register"] = _hooks.Register;
             _state["Hooks.Deregister"] = _hooks.Deregister;
-            _state.DoString($@"Hooks.Handling = {{
-    Continue = {(int)Hooks.Handling.Continue},
-    Handled = {(int)Hooks.Handling.Handled}
-}}");
+
+            _state.DoString(@"
+Hooks.Handling = luanet.import_type('QuakePlugins.API.LuaScripting.Hooks+Handling')
+");
 
             _state.DoString("Timers = {}");
             _state["Timers.In"] = _timers.In;

@@ -13,7 +13,8 @@ namespace QuakePlugins.API.LuaScripting
         public enum Handling
         {
             Continue = 0,
-            Handled = 1
+            Handled = 1,
+            Superceded = 2
         }
 
 
