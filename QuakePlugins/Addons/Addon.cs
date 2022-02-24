@@ -1,58 +1,56 @@
-﻿using NLua;
-using QuakePlugins;
+﻿using QuakePlugins.API;
 using QuakePlugins.API.LuaScripting;
-using QuakePlugins.LuaScripting;
-using System;
-using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace QuakePlugins.Addons
 {
     public class Addon
     {
-        private string _path;
-        private LuaEnvironment _lua;
+        /// <summary>
+        /// Full path to the addon folder
+        /// </summary>
+        public string FolderPath { get; private set; }
+        /// <summary>
+        /// The name of the addon
+        /// </summary>
+        public string Name { get; private set; }
 
-        internal Addon(string path)
+
+        protected Hooks Hooks { get; private set; }
+        protected Timers Timers { get; private set; }
+
+        internal void Initialize(string name, string path)
         {
-            _path = path;
+            Name = name;
+            FolderPath = path;
+
+            Hooks = new Hooks();
+            Timers = new Timers();
+
+            OnInitialize();
         }
 
-        internal void Load()
+        protected virtual void OnInitialize() { }
+        protected virtual void OnLoad() { }
+        protected virtual void OnUnload() { }
+        protected virtual void OnDestroy() { }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void RaiseOnLoad() => OnLoad();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void RaiseOnUnload() => OnUnload();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void RaiseOnDestroy() => OnDestroy();
+
+
+        internal virtual Hooks.Handling RaiseHook(string category, string name, params object[] args)
         {
-            _lua = new LuaEnvironment();
-            _lua.LuaException += Lua_Exception;
-            _lua.Initialize();
-
-            _lua.ExecuteFile(Path.Combine(_path, "main.lua"));
-        }
-
-        private void Lua_Exception(object sender, Exception e)
-        {
-            Quake.PrintConsole($"Lua Exception: {e}\n",System.Drawing.Color.Red);
-        }
-
-
-        internal Hooks.Handling RaiseQCHook(string name)
-        {
-            return _lua.RaiseQCHook(name);
-            // TODO: C# Raise QC Hook
-        }
-
-        internal Hooks.Handling RaiseQCHookPost(string name)
-        {
-            return _lua.RaiseQCHookPost(name);
-            // TODO: C# Raise QC Hook
-        }
-
-        internal Hooks.Handling RaiseEvent(string eventName, params object[] args)
-        {
-            return _lua.RaiseEvent(eventName, args);
-            // TODO: C# Raise Event
+            return Hooks.RaiseHooks(category, name, args);
         }
 
         internal void TimerTick()
         {
-            _lua.TimersTick();
+            Timers.Tick();
         }
     }
 }

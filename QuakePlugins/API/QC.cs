@@ -46,9 +46,23 @@ namespace QuakePlugins.API
             {
                 var func = QEngine.QCGetFunctionByName(name);
 
-                var debug1 = new IntPtr(func);
-
                 QEngine.QCCallFunction(func);
+            }
+        }
+
+        /// <summary>
+        /// Calls a QC function based on name, and sets the QC.Self temporarily.
+        /// </summary>
+        public static void CallFunctionAs(Edict ent,string name,params object[] parameters)
+        {
+            unsafe
+            {
+                var oself = QC.Self;
+                QC.Self = ent;
+
+                CallFunction(name, parameters);
+
+                QC.Self = oself;
             }
         }
 

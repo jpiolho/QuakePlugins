@@ -1,4 +1,5 @@
-﻿using QuakePlugins.Engine;
+﻿using QuakePlugins.API.LuaScripting;
+using QuakePlugins.Engine;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X64;
@@ -63,7 +64,7 @@ namespace QuakePlugins
 
                     try
                     {
-                        if (addon.RaiseEvent("OnStartFrame") != API.LuaScripting.Hooks.Handling.Continue)
+                        if (addon.RaiseHook(Hooks.HookEvent,"OnStartFrame") != API.LuaScripting.Hooks.Handling.Continue)
                             break;
                     }
                     catch (Exception ex)
@@ -109,18 +110,7 @@ namespace QuakePlugins
 
             _hook_ed_loadFromFile.OriginalFunction(ptr);
 
-            foreach (var addon in Program._addonsManager.Addons)
-            {
-                try
-                {
-                    if (addon.RaiseEvent("OnAfterEntitiesLoaded") != API.LuaScripting.Hooks.Handling.Continue)
-                        break;
-                }
-                catch (Exception ex)
-                {
-                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
-                }
-            }
+            Program._addonsManager.RaiseHook(Hooks.HookEvent, "OnAfterEntitiesLoaded");
         }
 
 
@@ -138,7 +128,7 @@ namespace QuakePlugins
             {
                 try
                 {
-                    if (addon.RaiseEvent("OnChat", clrName, clrMessage, messageType == 1) != API.LuaScripting.Hooks.Handling.Continue)
+                    if (addon.RaiseHook(Hooks.HookEvent,"OnChat", clrName, clrMessage, messageType == 1) != Hooks.Handling.Continue)
                         break;
                 }
                 catch (Exception ex)
@@ -153,20 +143,8 @@ namespace QuakePlugins
 
         private static unsafe void OnClientNewMap()
         {
-
-            foreach (var addon in Program._addonsManager.Addons)
-            {
-                try
-                {
-                    if (addon.RaiseEvent("OnClientNewMap") != API.LuaScripting.Hooks.Handling.Continue)
-                        break;
-                }
-                catch (Exception ex)
-                {
-                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
-                }
-            }
-
+            Program._addonsManager.RaiseHook(Hooks.HookEvent, "OnClientNewMap");
+            
             _hook_r_newMap.OriginalFunction();
         }
 
@@ -266,7 +244,7 @@ namespace QuakePlugins
                 PopSseCallConvRegistersx64,
                 PopAllx64,
                 //$"add rsp,8",
-            }, QEngine.hook_leaveFunc, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteFirst).Activate();
+            }, QEngine.hook_leaveFunc, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteAfter).Activate();
 
             _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, QEngine.func_printChat ).Activate();
             _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, QEngine.func_ed_loadFromFile).Activate();
@@ -285,46 +263,17 @@ namespace QuakePlugins
 
         private static int? ExecuteQCHook(string name,params object[] args)
         {
-            foreach (var addon in Program._addonsManager.Addons)
-            {
-                try
-                {
-                    var result = addon.RaiseQCHook(name);
+            var result = Program._addonsManager.RaiseHook(Hooks.HookQC, name);
 
-                    if (result == API.LuaScripting.Hooks.Handling.Handled)
-                        break;
-
-                    if(result == API.LuaScripting.Hooks.Handling.Superceded)
-                        return EngineUtils.QCGetReturnStatementIndex();
-                }
-                catch (Exception ex)
-                {
-                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
-                }
-            }
+            if (result == Hooks.Handling.Superceded)
+                return EngineUtils.QCGetReturnStatementIndex();
 
             return null;
         }
 
         private static int? ExecuteQCHookPost(string name, params object[] args)
         {
-            foreach (var addon in Program._addonsManager.Addons)
-            {
-                try
-                {
-                    var result = addon.RaiseQCHookPost(name);
-
-                    if (result == API.LuaScripting.Hooks.Handling.Handled)
-                        break;
-
-                    if (result == API.LuaScripting.Hooks.Handling.Superceded)
-                        return EngineUtils.QCGetReturnStatementIndex();
-                }
-                catch (Exception ex)
-                {
-                    Quake.PrintConsole($"[ADDON] Exception: {ex}\n", Color.Red);
-                }
-            }
+            var result = Program._addonsManager.RaiseHook(Hooks.HookQC, name);
 
             return null;
         }

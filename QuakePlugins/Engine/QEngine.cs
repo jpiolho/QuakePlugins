@@ -19,7 +19,7 @@ namespace QuakePlugins.Engine
         internal const long func_printChat = 0x14029e610;
         internal const long func_ed_loadFromFile = 0x1401c59f0;
         internal const long func_getPlayfabGamemode = 0x140374ea0;
-        internal const long hook_leaveFunc = 0x1401c7df0;
+        internal const long hook_leaveFunc = 0x1401c7d54; //0x1401c7df0;
         internal const long var_executingFunction = 0x1418a2a40;
         internal const long func_r_newMap = 0x14031a2c0;
 

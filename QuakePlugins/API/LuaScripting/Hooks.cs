@@ -1,4 +1,5 @@
 ﻿using NLua;
+using NLua.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,10 @@ namespace QuakePlugins.API.LuaScripting
     /// <apiglobal />
     public class Hooks
     {
+        internal const string HookEvent = "Event";
+        internal const string HookQC = "QC";
+        internal const string HookQCPost = "QCPost";
+
         public enum Handling
         {
             Continue = 0,
@@ -17,82 +22,69 @@ namespace QuakePlugins.API.LuaScripting
             Superceded = 2
         }
 
+        public delegate Handling HookCallback(object[] args);
 
-        private Dictionary<string,List<LuaFunction>> _qcHooks;
-        private Dictionary<string,List<LuaFunction>> _qcHooksPost;
-        private Dictionary<string, List<LuaFunction>> _eventHooks;
+        private Dictionary<string, List<HookCallback>> _hooks;
 
-        public Dictionary<string, List<LuaFunction>> QCHooks => _qcHooks;
-        public Dictionary<string, List<LuaFunction>> QCHooksPost => _qcHooksPost;
-        public Dictionary<string, List<LuaFunction>> EventHooks => _eventHooks;
 
-        public Hooks()
+        internal Hooks()
         {
-            _qcHooks = new Dictionary<string, List<LuaFunction>>();
-            _qcHooksPost = new Dictionary<string, List<LuaFunction>>();
-            _eventHooks = new Dictionary<string, List<LuaFunction>>();
+            _hooks = new Dictionary<string, List<HookCallback>>();
         }
 
-        public void RegisterQC(string name,LuaFunction func)
-        {
-            if (!_qcHooks.TryGetValue(name, out var hookList))
-                _qcHooks[name] = hookList = new List<LuaFunction>();
 
-            hookList.Add(func);
+        private string GetHookID(string category,string name) => category + "|" + name;
+
+        private bool RegisterHook(string category,string name,HookCallback func)
+        {
+            var hookId = GetHookID(category, name);
+
+            // Get or create the hook list for the category
+            if (!_hooks.TryGetValue(hookId, out var hookList))
+                _hooks[hookId] = hookList = new List<HookCallback>();
+
+            // Prevent duplicate hooks
+            if(!hookList.Contains(func))
+            {
+                hookList.Add(func);
+                return true;
+            }
+
+            return false;
         }
 
-        public bool DeregisterQC(string name,LuaFunction func)
+        private bool DeregisterHook(string category,string name, HookCallback func)
         {
-            if (!_qcHooks.TryGetValue(name, out var hookList))
+            var hookId = GetHookID(category, name);
+
+            if (!_hooks.TryGetValue(hookId, out var hookList))
                 return false;
 
             return hookList.Remove(func);
         }
 
-        public void RegisterQCPost(string name, LuaFunction func)
+        public void RegisterQC(string name, HookCallback func) => RegisterHook("QC", name, func);
+        public bool DeregisterQC(string name, HookCallback func) => DeregisterHook("QC", name, func);
+
+        public void RegisterQCPost(string name, HookCallback func) => RegisterHook("QCPost", name, func);
+        public bool DeregisterQCPost(string name, HookCallback func) => DeregisterHook("QCPost", name, func);
+
+        public void Register(string name, HookCallback func) => RegisterHook("Event", name, func);
+        public bool Deregister(string name, HookCallback func) => DeregisterHook("Event", name, func);
+
+
+        internal Handling RaiseHooks(string category,string name,params object[] arguments)
         {
-            if (!_qcHooksPost.TryGetValue(name, out var hookList))
-                _qcHooksPost[name] = hookList = new List<LuaFunction>();
-
-            hookList.Add(func);
-        }
-
-        public bool DeregisterQCPost(string name,LuaFunction func)
-        {
-            if (!_qcHooksPost.TryGetValue(name, out var hookList))
-                return false;
-
-            return hookList.Remove(func);
-        }
-
-        public void Register(string name, LuaFunction func)
-        {
-            if (!_eventHooks.TryGetValue(name, out var hookList))
-                _eventHooks[name] = hookList = new List<LuaFunction>();
-
-            hookList.Add(func);
-        }
-
-        public bool Deregister(string name, LuaFunction func)
-        {
-            if (!_eventHooks.TryGetValue(name, out var hookList))
-                return false;
-
-            return hookList.Remove(func);
-        }
-
-
-        internal Handling RaiseHooks(Dictionary<string,List<LuaFunction>> hookList,string name,params object[] arguments)
-        {
-            if (!hookList.TryGetValue(name, out var hookedFunctions))
+            var hookId = GetHookID(category, name);
+            if (!_hooks.TryGetValue(hookId, out var hookList))
                 return Handling.Continue;
 
-            foreach (var hook in hookedFunctions)
+            foreach (var hook in hookList)
             {
-                var returns = hook.Call(arguments);
+                var returnValue = hook.Invoke(arguments);
 
-                if (returns.Length > 0 && (Handling)returns[0] != Handling.Continue)
-                    return (Handling)returns[0];
+                if (returnValue != Handling.Continue)
+                    return returnValue;
             }
 
             return Handling.Continue;
