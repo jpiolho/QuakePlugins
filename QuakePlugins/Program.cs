@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -30,6 +31,8 @@ namespace QuakePlugins
             {
                 QEngine.InitializeQEngine();
 
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
                 _addonsManager = new AddonsManager();
 
                 Quake.SetupHooks();
@@ -40,6 +43,12 @@ namespace QuakePlugins
             }
             
         }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(a => a.FullName == args.Name);
+        }
+
 
         static void Main(string[] args)
         {

@@ -1,7 +1,7 @@
 ﻿namespace QuakePlugins.API
 {
     /// <apiglobal />
-    internal class Console
+    public class Console
     {
         /// <summary>
         /// Prints some text to the console.

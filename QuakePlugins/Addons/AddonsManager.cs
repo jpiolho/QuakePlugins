@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace QuakePlugins.Addons
 {
@@ -37,6 +39,21 @@ namespace QuakePlugins.Addons
                     Quake.PrintConsole(" (Lua)...\n");
                     addon = new AddonLua();
                 }
+                else
+                {
+                    Quake.PrintConsole(" (.NET)...\n");
+
+                    var assembly = Assembly.LoadFrom(Path.Combine(folder.FullName, "plugin.dll"));
+
+                    foreach(var type in assembly.GetTypes())
+                    {
+                        if(type.IsAssignableTo(typeof(Addon)))
+                        {
+                            addon = (Addon)Activator.CreateInstance(type);
+                            break;
+                        }
+                    }
+                }
 
                 if(addon == null)
                 {
@@ -55,7 +72,7 @@ namespace QuakePlugins.Addons
             }
         }
 
-
+        
         internal Hooks.Handling RaiseHook(string category,string name,params object[] args)
         {
             Hooks.Handling returnValue = Hooks.Handling.Continue;
