@@ -46,7 +46,19 @@ namespace QuakePlugins
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            return AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(a => a.FullName == args.Name);
+            // Try resolving it to a loaded assembly
+            var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(a => a.FullName == args.Name);
+            if (loadedAssembly != null)
+                return loadedAssembly;
+
+            // Resolve it to an assembly in the same folder
+            var assemblyFile = args.Name.Split(",")[0] + ".dll";
+            var path = Path.Combine(Path.GetDirectoryName(args.RequestingAssembly.Location), assemblyFile);
+            if (File.Exists(path))
+                return Assembly.LoadFrom(path);
+
+
+            return null;
         }
 
 
