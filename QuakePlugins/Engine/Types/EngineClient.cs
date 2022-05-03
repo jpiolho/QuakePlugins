@@ -10,18 +10,18 @@ namespace QuakePlugins.Engine.Types
     [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct EngineClient
     {
-        public const int SizeOf = 82232;
+        public const int SizeOf = 82240;
 
         [FieldOffset(0)]
         public bool active;
 
-        [FieldOffset(82008)]
+        [FieldOffset(82016)]
         public EngineEdict* edict;
 
-        [FieldOffset(82016)]
+        [FieldOffset(82024)]
         public fixed char name[32];
 
-        [FieldOffset(82052)]
+        [FieldOffset(82060)]
         public int color;
     }
 }

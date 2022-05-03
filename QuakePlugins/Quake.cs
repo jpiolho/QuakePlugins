@@ -273,7 +273,7 @@ namespace QuakePlugins
 
         private static int? ExecuteQCHookPost(string name, params object[] args)
         {
-            var result = Program._addonsManager.RaiseHook(Hooks.HookQC, name);
+            var result = Program._addonsManager.RaiseHook(Hooks.HookQCPost, name);
 
             return null;
         }

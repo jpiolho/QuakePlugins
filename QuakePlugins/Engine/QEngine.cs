@@ -15,13 +15,13 @@ namespace QuakePlugins.Engine
 {
     internal class QEngine
     {
-        internal const long func_enterFunc = 0x1401c7390;
-        internal const long func_printChat = 0x14029e610;
-        internal const long func_ed_loadFromFile = 0x1401c59f0;
-        internal const long func_getPlayfabGamemode = 0x140374ea0;
-        internal const long hook_leaveFunc = 0x1401c7d54; //0x1401c7df0;
-        internal const long var_executingFunction = 0x1418a2a40;
-        internal const long func_r_newMap = 0x14031a2c0;
+        internal const long func_enterFunc = 0x1401cb660;
+        internal const long func_printChat = 0x1402a3a50;
+        internal const long func_ed_loadFromFile = 0x1401c9a30;
+        internal const long func_getPlayfabGamemode = 0x14037d420;
+        internal const long hook_leaveFunc = 0x1401cc024;
+        internal const long var_executingFunction = 0x1418c1160;
+        internal const long func_r_newMap = 0x1403221e0;
 
         private static IntPtr _pr_globals;
         private static IntPtr _pr_builtin;
@@ -42,29 +42,29 @@ namespace QuakePlugins.Engine
             _stack = new Stack<(byte[],int)>(); // new byte[112];
 
             var hooks = ReloadedHooks.Instance;
-            _consolePrint = hooks.CreateWrapper<FnConsolePrint>(0x1400d69a0, out _);
-            _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(0x1400da2c0, out _);
-            _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dac50, out _);
-            _cvarGet = hooks.CreateWrapper<FnCvarGet>(0x1400d9250, out _);
-            _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c2550, out _);
-            _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c25c0, out _);
-            _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c25c0, out _);
-            _qcExecuteProgram = hooks.CreateWrapper<FnQCExecuteProgram>(0x1401c74d0, out _);
-            _qcFindFunction = hooks.CreateWrapper<FnQCFindFunction>(0x1401c2df0, out _);
-            _edictGetField = hooks.CreateWrapper<FnEdictGetField>(0x1401c2bd0, out _);
+            _consolePrint = hooks.CreateWrapper<FnConsolePrint>(0x1400d84c0, out _);
+            _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(0x1400dbde0, out _);
+            _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dc770, out _);
+            _cvarGet = hooks.CreateWrapper<FnCvarGet>(0x1400dad70, out _);
+            _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c66c0, out _);
+            _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c6730, out _);
+            _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c6730, out _); // TODO: Fix
+            _qcExecuteProgram = hooks.CreateWrapper<FnQCExecuteProgram>(0x1401cb7a0, out _);
+            _qcFindFunction = hooks.CreateWrapper<FnQCFindFunction>(0x1401c6e30, out _);
+            _edictGetField = hooks.CreateWrapper<FnEdictGetField>(0x1401c6c10, out _);
 
             unsafe
             {
-                _g_gamedir = (char***)0x140e4bb18;
-                _pr_globals = new IntPtr(0x1418a2a00);
-                _pr_builtin = new IntPtr(0x1409a5a80);
-                _pr_argc = (int*)0x1418a2a38;
-                _sv_edicts = (EngineEdict**)0x1418beeb0;
-                _pr_edict_size = (uint*)0x1418a29f8;
-                _serverStatic = (EngineServerStatic*)0x141a607d0;
-                _pr_functions = (EngineQCFunction**)0x1418a2a28;
-                _client_worldmodel = (void*)0x149dbe838;
-                _pr_statements = (EngineQCStatement**)0x1418a2a18;
+                _g_gamedir = (char***)0x140e58b18;
+                _pr_globals = new IntPtr(0x1418bef20);
+                _pr_builtin = new IntPtr(0x1409b2a80);
+                _pr_argc = (int*)0x1418bef5c;
+                _sv_edicts = (EngineEdict**)0x1418db3d0;
+                _pr_edict_size = (uint*)0x1418bef18;
+                _serverStatic = (EngineServerStatic*)0x141a7d280;
+                _pr_functions = (EngineQCFunction**)0x1418bef48;
+                _client_worldmodel = (void*)0x149dcc438;
+                _pr_statements = (EngineQCStatement**)0x1418bef38;
             }
         }
 
@@ -239,7 +239,7 @@ namespace QuakePlugins.Engine
                 var cvarPtr = Marshal.AllocHGlobal(sizeof(Cvar_t));
 
                 _cvarRegister.Value.Invoke(cvarPtr, namePointer, defaultValuePointer, descriptionPointer, flags, min, max, unknown, IntPtr.Zero);
-                *(void**)(0x149e0c178 + 24) = null; // Rebuild cvars
+                *(void**)(0x149e19d78 + 24) = null; // Rebuild cvars
 
                 return cvarPtr;
             }
@@ -258,7 +258,7 @@ namespace QuakePlugins.Engine
             {
                 unsafe
                 {
-                    return _cvarGet.Value.Invoke(new IntPtr(*(long*)0x140f9dcc0), ptr);
+                    return _cvarGet.Value.Invoke(new IntPtr(*(long*)0x140fba1c0), ptr);
                 }
             }
             finally
@@ -297,7 +297,7 @@ namespace QuakePlugins.Engine
             {
                 unsafe
                 {
-                    _consolePrint.Value.Invoke(new IntPtr(0x1409bf140), new IntPtr(&color), textPointer);
+                    _consolePrint.Value.Invoke(new IntPtr(0x1409cc140), new IntPtr(&color), textPointer);
                 }
             }
             finally
