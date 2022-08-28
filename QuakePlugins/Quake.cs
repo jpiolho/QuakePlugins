@@ -1,4 +1,5 @@
 ﻿using QuakePlugins.API.LuaScripting;
+using QuakePlugins.Core;
 using QuakePlugins.Engine;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
@@ -40,6 +41,9 @@ namespace QuakePlugins
         public delegate void R_NewMap();
         internal static IHook<R_NewMap> _hook_r_newMap;
 
+        [Function(CallingConventions.Microsoft)]
+        public delegate void SV_SpawnServer(IntPtr parameter);
+        internal static IHook<SV_SpawnServer> _hook_sv_spawnServer;
         
 
 
@@ -147,7 +151,19 @@ namespace QuakePlugins
             
             _hook_r_newMap.OriginalFunction();
         }
+        private static unsafe void OnSV_SpawnServer(IntPtr arg1)
+        {
+            try
+            {
+                Program._addonsManager.Start();
+            }
+            catch(Exception ex)
+            {
+                Quake.PrintConsole($"QuakePlugins unhandled exception: {ex}\n", Color.Red);
+            }
 
+            _hook_sv_spawnServer.OriginalFunction(arg1);
+        }
 
         private static IntPtr _customGamemodeNamePtr;
         private static string _customGamemodeName;
@@ -232,6 +248,7 @@ namespace QuakePlugins
 
         public static unsafe void SetupHooks()
         {
+            /*
             _hook_pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(Hook_QC_StartFunction, QEngine.func_enterFunc).Activate();
 
             _pr_leaveFunctionHook = new AsmHook(new string[]
@@ -244,12 +261,16 @@ namespace QuakePlugins
                 PopSseCallConvRegistersx64,
                 PopAllx64,
                 //$"add rsp,8",
-            }, QEngine.hook_leaveFunc, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteAfter).Activate();
+            }, (nuint)QEngine.hook_leaveFunc, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteAfter).Activate();
+            */
 
+            _hook_sv_spawnServer = ReloadedHooks.Instance.CreateHook<SV_SpawnServer>(OnSV_SpawnServer, Offsets.GetOffsetLong("SV_SpawnServer")).Activate();
+            /*
             _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, QEngine.func_printChat ).Activate();
             _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, QEngine.func_ed_loadFromFile).Activate();
             _hook_getPlayfabGameModeName = ReloadedHooks.Instance.CreateHook<GetPlayfabGameModeName>(OnGetPlayfabGameModeName, QEngine.func_getPlayfabGamemode).Activate();
             _hook_r_newMap = ReloadedHooks.Instance.CreateHook<R_NewMap>(OnClientNewMap, QEngine.func_r_newMap).Activate();
+            */
         }
 
 

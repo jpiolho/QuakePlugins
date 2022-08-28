@@ -1,5 +1,8 @@
 ﻿using QuakePlugins.Addons;
+using QuakePlugins.API;
+using QuakePlugins.Core;
 using QuakePlugins.Engine;
+using Reloaded.Injector;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,24 +17,29 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Console = QuakePlugins.API.Console;
 
 namespace QuakePlugins
 {
     public static class Program
     {
-        public delegate void MainInjectedDelegate();
+        public delegate void MainInjectedDelegate(IntPtr rootPtr);
 
         public static AddonsManager _addonsManager;
 
-        static void MainInjected()
+        static void MainInjected(IntPtr quakePluginsRootPtr)
         {
+            var root = Marshal.PtrToStringAuto(quakePluginsRootPtr);
+
             //Debugger.Launch();
 
             try
             {
+                Offsets.LoadAsync(root).Wait();
+
                 QEngine.InitializeQEngine();
 
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+                Quake.PrintConsole("QuakePlugins loaded\n", System.Drawing.Color.Green);
 
                 _addonsManager = new AddonsManager();
 
@@ -62,8 +70,21 @@ namespace QuakePlugins
         }
 
 
-        static void Main(string[] args)
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        unsafe struct DotnetInitializeParameters
         {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+            public byte[] DllPath;
+        }
+
+        static async Task Main(string[] args)
+        {
+            System.Console.WriteLine("Loading offsets...");
+            await Offsets.LoadAsync();
+
+            System.Console.WriteLine("Searching for quake process...");
             var processes = Process.GetProcessesByName("Quake_x64_steam");
 
             if (processes.Length < 1)
@@ -72,9 +93,23 @@ namespace QuakePlugins
             if (processes.Length > 1)
                 throw new Exception("Too many processes found");
 
-            DllInjector.Inject(processes[0], Path.Combine(AppContext.BaseDirectory, "QuakePluginsHook.dll"),"dotnet_initialize");
+            using var injector = new Injector(processes[0]);
+            var addr1 = injector.Inject(@"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native\comhost.dll");
+            var addr2 = injector.Inject(@"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native\ijwhost.dll");
+            var addr3 = injector.Inject(@"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native\nethost.dll");
 
-            Console.WriteLine("Injected! Enjoy");
+            var dll = Path.Combine(AppContext.BaseDirectory, "QuakePluginsHook.dll");
+            var addr4 = injector.Inject(dll);
+
+            var parameters = new DotnetInitializeParameters();
+            parameters.DllPath = new byte[256];
+            Encoding.ASCII.GetBytes(dll).CopyTo(parameters.DllPath, 0);
+
+            injector.CallFunction("QuakePluginsHook.dll", "dotnet_initialize", parameters, true);
+
+            //DllInjector.Inject(processes[0], Path.Combine(AppContext.BaseDirectory, "QuakePluginsHook.dll"),"dotnet_initialize");
+
+            System.Console.WriteLine("Injected! Enjoy");
         }
     }
 }

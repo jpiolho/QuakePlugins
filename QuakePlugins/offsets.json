@@ -1,0 +1,11 @@
+﻿{
+  "RegisterCvar": "1400dc7e0",
+  "PrintConsoleBuffer": "1409d8690",
+  "SV_SpawnServer": "1401f17e0",
+  "Builtins": "1409bea80",
+  "BuiltinsPointer": "140806cb8",
+  "CvarGet": "1400db770",
+  "LastCvar": "140fc8e80",
+  "PrintConsole": "1400d8df0",
+  "CvarList": "149e29508"
+} 

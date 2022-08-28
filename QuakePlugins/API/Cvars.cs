@@ -8,6 +8,7 @@ namespace QuakePlugins.API
     {
         public static Cvar Register(string name, string defaultValue, string description = "", int flags=0,float min=0,float max=1)
         {
+            // Check if the cvar already exists
             var ptr = QEngine.CvarGet(name);
             if (ptr != IntPtr.Zero)
                 return new Cvar(ptr);

@@ -1,4 +1,5 @@
-﻿using QuakePlugins.Engine.Types;
+﻿using QuakePlugins.Core;
+using QuakePlugins.Engine.Types;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions.Structs;
 using Reloaded.Hooks.Definitions.X64;
@@ -42,10 +43,12 @@ namespace QuakePlugins.Engine
             _stack = new Stack<(byte[],int)>(); // new byte[112];
 
             var hooks = ReloadedHooks.Instance;
-            _consolePrint = hooks.CreateWrapper<FnConsolePrint>(0x1400d84c0, out _);
-            _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(0x1400dbde0, out _);
+            _consolePrint = hooks.CreateWrapper<FnConsolePrint>(Offsets.GetOffsetLong("PrintConsole"), out _);
+            _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(Offsets.GetOffsetLong("CvarRegister"), out _);
+            _cvarGet = hooks.CreateWrapper<FnCvarGet>(Offsets.GetOffsetLong("CvarGet"), out _);
+
+            /*
             _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dc770, out _);
-            _cvarGet = hooks.CreateWrapper<FnCvarGet>(0x1400dad70, out _);
             _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c66c0, out _);
             _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c6730, out _);
             _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c6730, out _); // TODO: Fix
@@ -66,6 +69,7 @@ namespace QuakePlugins.Engine
                 _client_worldmodel = (void*)0x149dcc438;
                 _pr_statements = (EngineQCStatement**)0x1418bef38;
             }
+            */
         }
 
         public enum QCValueOffset
@@ -226,25 +230,21 @@ namespace QuakePlugins.Engine
         [Function(CallingConventions.Microsoft)]
         private struct FnCvarRegister { public FuncPtr<IntPtr, IntPtr, IntPtr, IntPtr, int, float, float, bool, IntPtr, IntPtr> Value; }
         private static FnCvarRegister _cvarRegister;
-
         public static IntPtr CvarRegister(string name, string description, string defaultValue, int flags, float min, float max, bool unknown, IntPtr callback)
         {
             IntPtr namePointer = Marshal.StringToHGlobalAnsi(name);
             IntPtr descriptionPointer = Marshal.StringToHGlobalAnsi(description);
             IntPtr defaultValuePointer = Marshal.StringToHGlobalAnsi(defaultValue);
 
-
             unsafe
             {
                 var cvarPtr = Marshal.AllocHGlobal(sizeof(Cvar_t));
 
                 _cvarRegister.Value.Invoke(cvarPtr, namePointer, defaultValuePointer, descriptionPointer, flags, min, max, unknown, IntPtr.Zero);
-                *(void**)(0x149e19d78 + 24) = null; // Rebuild cvars
+                *(void**)(Offsets.GetOffsetLong("CvarList") + 24) = null; // Rebuild cvars
 
                 return cvarPtr;
             }
-
-
         }
 
         [Function(CallingConventions.Microsoft)]
@@ -258,7 +258,7 @@ namespace QuakePlugins.Engine
             {
                 unsafe
                 {
-                    return _cvarGet.Value.Invoke(new IntPtr(*(long*)0x140fba1c0), ptr);
+                    return _cvarGet.Value.Invoke(new IntPtr(*(long*)Offsets.GetOffsetLong("CvarLast")), ptr);
                 }
             }
             finally
@@ -297,7 +297,7 @@ namespace QuakePlugins.Engine
             {
                 unsafe
                 {
-                    _consolePrint.Value.Invoke(new IntPtr(0x1409cc140), new IntPtr(&color), textPointer);
+                    _consolePrint.Value.Invoke(new IntPtr(Offsets.GetOffsetLong("PrintConsoleBuffer")), new IntPtr(&color), textPointer);
                 }
             }
             finally

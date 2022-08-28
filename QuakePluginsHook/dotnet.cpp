@@ -2,6 +2,7 @@
 #include <string>
 #include <locale>
 #include <codecvt>
+#include <ostream>
 
 #include "dotnet.hpp"
 #include "quake.hpp"
@@ -140,49 +141,59 @@ std::wstring get_dll_directory(const std::wstring dll_path) {
     return std::wstring(dll_path).substr(0, pos);
 }
 
+template <typename char_type>
+struct ostreambuf : public std::basic_streambuf<char_type, std::char_traits<char_type> >
+{
+    ostreambuf(char_type* buffer, std::streamsize bufferLength)
+    {
+        // set the "put" pointer the start of the buffer and record it's length.
+        setp(buffer, buffer + bufferLength);
+    }
+};
 
-void PrintConsole(std::string text) {
-    Quake_PrintConsole((std::string("[QuakePlugins] ") + text + "\n").c_str(), ConsoleColorRegular);
-}
 
-void PrintConsoleError(std::string text) {
-    Quake_PrintConsole((std::string("[QuakePlugins] ") + text + "\n").c_str(), ConsoleColorError);
-}
+struct DotnetInitializeParameters
+{
+    const char DllPath[256];
+};
 
+int dotnet_initialize(DotnetInitializeParameters* parameters) {
 
-int dotnet_initialize(char* dllPath) {
+    char printBuffer[1024];
+    ostreambuf<char> buffer(printBuffer,1024);
+    std::ostream print(&buffer);
 
-    PrintConsole("Initializing dotnet...");
-
-    dll_folder = get_dll_directory(string_to_wstring(std::string(dllPath)));
+    print << "Initializing dotnet (" << parameters->DllPath << ")" << std::endl;
+    
+    dll_folder = get_dll_directory(string_to_wstring(std::string(parameters->DllPath)));
 
     if (!get_function_pointers()) {
-        PrintConsoleError("Failed to get function pointers");
+        print << "Failed to get function pointers" << std::endl;
         return -1;
     }
 
     if (get_dotnet_load_assembly(append_path(dll_folder, L"QuakePlugins.runtimeconfig.json")) == nullptr) {
-        PrintConsoleError("Failed to load dotnet assembly");
+        print << "Failed to load dotnet assembly" << std::endl;
         return -2;
     }
 
     
-    PrintConsole("Getting dotnet functions...");
+    print << "Getting dotnet functions..." << std::endl;
 
     QuakePlugins_MainInjected = (QuakePlugins_MainInjected_fn)get_dotnet_function(L"MainInjected",
         L"QuakePlugins.Program, QuakePlugins",
         L"QuakePlugins.Program+MainInjectedDelegate, QuakePlugins"
     );
     if (QuakePlugins_MainInjected == nullptr) {
-        PrintConsoleError("Failed to find dotnet MainInjected function");
+        print << "Failed to find dotnet MainInjected function" << std::endl;
         return -6;
     }
 
-    PrintConsole("Calling dotnet main...");
+    print << "Calling dotnet main..." << std::endl;
 
-    QuakePlugins_MainInjected();
+    QuakePlugins_MainInjected(dll_folder.c_str());
 
-    PrintConsole("Ready");
+    print << "Ready" << std::endl;
 
 
     return 0;
