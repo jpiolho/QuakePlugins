@@ -1,9 +1,9 @@
-﻿using QuakePlugins.Addons;
+﻿using QuakePlugins.Plugins;
 using QuakePlugins.API;
 
 namespace QuakePlugins.CSharpPluginTest
 {
-    public class MyAddon : Addon
+    public class MyAddon : Plugin
     {
         Cvar cvar;
         protected override void OnInitialize()

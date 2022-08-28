@@ -7,13 +7,13 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QuakePlugins.Addons
+namespace QuakePlugins.Plugins
 {
-    internal class AddonAssemblyLoadContext : AssemblyLoadContext
+    internal class PluginAssemblyLoadContext : AssemblyLoadContext
     {
         private AssemblyDependencyResolver[] _resolvers;
 
-        public AddonAssemblyLoadContext(string pluginPath)
+        public PluginAssemblyLoadContext(string pluginPath)
         {
             _resolvers = new AssemblyDependencyResolver[]
             {

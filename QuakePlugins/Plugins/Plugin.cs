@@ -3,16 +3,16 @@ using QuakePlugins.API.LuaScripting;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace QuakePlugins.Addons
+namespace QuakePlugins.Plugins
 {
-    public abstract class Addon
+    public abstract class Plugin
     {
         /// <summary>
-        /// Full path to the addon folder
+        /// Full path to the plugin folder
         /// </summary>
         public string FolderPath { get; private set; }
         /// <summary>
-        /// The name of the addon
+        /// The name of the plugin
         /// </summary>
         public string Name { get; private set; }
 

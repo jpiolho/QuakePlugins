@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using static QuakePlugins.API.LuaScripting.Hooks;
 
-namespace QuakePlugins.Addons
+namespace QuakePlugins.Plugins
 {
-    internal class AddonLua : Addon
+    internal class PluginLua : Plugin
     {
         private Lua _state;
 

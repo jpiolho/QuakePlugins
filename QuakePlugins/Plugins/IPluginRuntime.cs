@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QuakePlugins.Addons
+namespace QuakePlugins.Plugins
 {
-    internal interface IAddonRuntime
+    internal interface IPluginRuntime
     {
         internal event EventHandler<Exception> UnhandledException;
 

@@ -1,6 +1,6 @@
-﻿namespace QuakePlugins.Addons
+﻿namespace QuakePlugins.Plugins
 {
-    public class AddonInfo
+    public class PluginInfo
     {
         public string Name { get; set; }
         public string[] Lua { get; set; }

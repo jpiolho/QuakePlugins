@@ -7,17 +7,17 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace QuakePlugins.Addons
+namespace QuakePlugins.Plugins
 {
-    public class AddonsManager
+    public class PluginManager
     {
-        private List<Addon> _addons;
+        private List<Plugin> _addons;
 
-        public IReadOnlyList<Addon> Addons => _addons.AsReadOnly();
+        public IReadOnlyList<Plugin> Addons => _addons.AsReadOnly();
 
-        internal AddonsManager()
+        internal PluginManager()
         {
-            _addons = new List<Addon>();
+            _addons = new List<Plugin>();
         }
 
         internal void Start()
@@ -32,26 +32,26 @@ namespace QuakePlugins.Addons
 
                 Quake.PrintConsole($"Loading addon '{folder}'");
 
-                Addon addon = null;
+                Plugin addon = null;
 
                 if(File.Exists(Path.Combine(folder.FullName,"main.lua")))
                 {
                     Quake.PrintConsole(" (Lua)...\n");
-                    addon = new AddonLua();
+                    addon = new PluginLua();
                 }
                 else
                 {
                     Quake.PrintConsole(" (.NET)...\n");
 
                     var dll = Path.Combine(folder.FullName, "plugin.dll");
-                    var loadContext = new AddonAssemblyLoadContext(dll);
+                    var loadContext = new PluginAssemblyLoadContext(dll);
                     var assembly = loadContext.LoadFromAssemblyPath(dll);
 
                     foreach(var type in assembly.GetTypes())
                     {
-                        if(type.IsAssignableTo(typeof(Addon)))
+                        if(type.IsAssignableTo(typeof(Plugin)))
                         {
-                            addon = (Addon)Activator.CreateInstance(type);
+                            addon = (Plugin)Activator.CreateInstance(type);
                             break;
                         }
                     }

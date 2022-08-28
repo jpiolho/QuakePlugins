@@ -1,4 +1,4 @@
-﻿using QuakePlugins.Addons;
+﻿using QuakePlugins.Plugins;
 using QuakePlugins.API;
 using QuakePlugins.Core;
 using QuakePlugins.Engine;
@@ -25,7 +25,7 @@ namespace QuakePlugins
     {
         public delegate void MainInjectedDelegate(IntPtr rootPtr);
 
-        public static AddonsManager _addonsManager;
+        public static PluginManager _addonsManager;
 
         static void MainInjected(IntPtr quakePluginsRootPtr)
         {
@@ -41,7 +41,7 @@ namespace QuakePlugins
 
                 Quake.PrintConsole("QuakePlugins loaded\n", System.Drawing.Color.Green);
 
-                _addonsManager = new AddonsManager();
+                _addonsManager = new PluginManager();
 
                 Quake.SetupHooks();
             }
