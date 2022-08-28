@@ -43,7 +43,9 @@ namespace QuakePlugins.Addons
                 {
                     Quake.PrintConsole(" (.NET)...\n");
 
-                    var assembly = Assembly.LoadFrom(Path.Combine(folder.FullName, "plugin.dll"));
+                    var dll = Path.Combine(folder.FullName, "plugin.dll");
+                    var loadContext = new AddonAssemblyLoadContext(dll);
+                    var assembly = loadContext.LoadFromAssemblyPath(dll);
 
                     foreach(var type in assembly.GetTypes())
                     {

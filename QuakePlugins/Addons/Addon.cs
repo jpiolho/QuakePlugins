@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace QuakePlugins.Addons
 {
-    public class Addon
+    public abstract class Addon
     {
         /// <summary>
         /// Full path to the addon folder
