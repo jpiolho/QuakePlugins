@@ -1,5 +1,6 @@
 ﻿using QuakePlugins.Engine;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace QuakePlugins.API
@@ -8,8 +9,19 @@ namespace QuakePlugins.API
     /// Provides access to the engine builtins, which are the engine functions that can be called from QuakeC.
     /// </summary>
     /// <apiglobal />
-    public static class Builtins
+    public class Builtins
     {
+        public delegate void CustomBuiltinHandler();
+        private List<(string, CustomBuiltinHandler)> _customBuiltins;
+
+        internal IEnumerable<(string, CustomBuiltinHandler)> CustomBuiltins => _customBuiltins;
+
+        public void RegisterCustomBuiltin(string name, CustomBuiltinHandler function)
+        {
+            _customBuiltins.Add((name, function));
+        }
+
+
         private static void CallBuiltIn(int id, params object[] parameters) => CallBuiltIn<object>(id, parameters);
         /// <summary>
         /// Super inefficient method to call builtins
@@ -397,5 +409,6 @@ namespace QuakePlugins.API
         /// Calls an engine builtin by index that returns a bool.
         /// </summary>
         public static bool ByIndexBool(int index, params object[] arguments) => CallBuiltIn<bool>(index, arguments);
+
     }
 }

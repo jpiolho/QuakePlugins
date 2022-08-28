@@ -3,6 +3,7 @@ using QuakePlugins.Engine.Types;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions.Structs;
 using Reloaded.Hooks.Definitions.X64;
+using Reloaded.Memory.Sources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace QuakePlugins.Engine
         internal const long func_r_newMap = 0x1403221e0;
 
         private static IntPtr _pr_globals;
+        private static IntPtr _pr_builtins;
         private static IntPtr _pr_builtin;
         private static unsafe int* _pr_argc;
         private static unsafe EngineEdict** _sv_edicts;
@@ -34,6 +36,7 @@ namespace QuakePlugins.Engine
         private static unsafe EngineQCFunction** _pr_functions;
         private static unsafe void* _client_worldmodel;
         private static unsafe EngineQCStatement** _pr_statements;
+
 
         private static Stack<(byte[],int)> _stack;
         //private static int _qc_argcbackup;
@@ -46,6 +49,7 @@ namespace QuakePlugins.Engine
             _consolePrint = hooks.CreateWrapper<FnConsolePrint>(Offsets.GetOffsetLong("PrintConsole"), out _);
             _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(Offsets.GetOffsetLong("CvarRegister"), out _);
             _cvarGet = hooks.CreateWrapper<FnCvarGet>(Offsets.GetOffsetLong("CvarGet"), out _);
+            _qcFindFunction = hooks.CreateWrapper<FnQCFindFunction>(Offsets.GetOffsetLong("ED_FindFunction"), out _);
 
             /*
             _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dc770, out _);
@@ -53,23 +57,26 @@ namespace QuakePlugins.Engine
             _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c6730, out _);
             _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c6730, out _); // TODO: Fix
             _qcExecuteProgram = hooks.CreateWrapper<FnQCExecuteProgram>(0x1401cb7a0, out _);
-            _qcFindFunction = hooks.CreateWrapper<FnQCFindFunction>(0x1401c6e30, out _);
             _edictGetField = hooks.CreateWrapper<FnEdictGetField>(0x1401c6c10, out _);
+            */
 
             unsafe
             {
+                _pr_functions = (EngineQCFunction**)Offsets.GetOffsetLong("pr_functions");
+                _pr_builtins = Offsets.GetOffsetPointer("pr_builtins");
+                _pr_builtin = new IntPtr(*(void**)_pr_builtins);
+                /*
                 _g_gamedir = (char***)0x140e58b18;
                 _pr_globals = new IntPtr(0x1418bef20);
-                _pr_builtin = new IntPtr(0x1409b2a80);
                 _pr_argc = (int*)0x1418bef5c;
                 _sv_edicts = (EngineEdict**)0x1418db3d0;
                 _pr_edict_size = (uint*)0x1418bef18;
                 _serverStatic = (EngineServerStatic*)0x141a7d280;
-                _pr_functions = (EngineQCFunction**)0x1418bef48;
                 _client_worldmodel = (void*)0x149dcc438;
                 _pr_statements = (EngineQCStatement**)0x1418bef38;
+                */
             }
-            */
+            
         }
 
         public enum QCValueOffset
@@ -160,7 +167,7 @@ namespace QuakePlugins.Engine
             unsafe
             {
                 var hooks = ReloadedHooks.Instance;
-                hooks.CreateWrapper<FnBuiltIn>(*(long*)(_pr_builtin.ToInt64() + index * sizeof(void*)), out _).Value.Invoke(0);
+                hooks.CreateWrapper<FnBuiltIn>(*(long*)(_pr_builtins.ToInt64() + index * sizeof(void*)), out _).Value.Invoke(0);
             }
         }
 
@@ -450,7 +457,36 @@ namespace QuakePlugins.Engine
         }
 
 
+        public static int BuiltinsGetOriginalCount()
+        {
+            return (int)((Offsets.GetOffsetLong("pr_builtin_end") - Offsets.GetOffsetLong("pr_builtin")) / IntPtr.Size);
+        }
 
+        public static IntPtr[] BuiltinsGetOriginal()
+        {
+            unsafe
+            {
+                var builtins = new List<IntPtr>();
+
+                var ptr = (void**)Offsets.GetOffsetNativePointer("pr_builtin");
+                while (ptr < Offsets.GetOffsetNativePointer("pr_builtin_end"))
+                    builtins.Add(new IntPtr(*ptr++));
+
+                return builtins.ToArray();
+            }
+        }
+
+        public static void BuiltinsSetPointer(IntPtr ptr)
+        {
+            var memory = new Memory();
+            unsafe
+            {
+                var pr_builtins = Offsets.GetOffset("pr_builtins");
+                memory.ChangePermission(pr_builtins, IntPtr.Size, Reloaded.Memory.Kernel32.Kernel32.MEM_PROTECTION.PAGE_READWRITE);
+                memory.Write(pr_builtins, ptr);
+                memory.ChangePermission(pr_builtins, IntPtr.Size, Reloaded.Memory.Kernel32.Kernel32.MEM_PROTECTION.PAGE_READONLY);
+            }
+        }
 
 
 

@@ -37,15 +37,14 @@ namespace QuakePlugins
         public delegate IntPtr GetPlayfabGameModeName();
         internal static IHook<GetPlayfabGameModeName> _hook_getPlayfabGameModeName;
 
-        [Function(CallingConventions.Microsoft)]
-        public delegate void R_NewMap();
+        [Function(CallingConventions.Microsoft)] public delegate void R_NewMap();
         internal static IHook<R_NewMap> _hook_r_newMap;
 
-        [Function(CallingConventions.Microsoft)]
-        public delegate void SV_SpawnServer(IntPtr parameter);
+        [Function(CallingConventions.Microsoft)] public delegate void SV_SpawnServer(IntPtr parameter);
         internal static IHook<SV_SpawnServer> _hook_sv_spawnServer;
-        
 
+        [Function(CallingConventions.Microsoft)] public delegate void PR_LoadProgs();
+        internal static IHook<PR_LoadProgs> _hook_pr_loadProgs;
 
         private static unsafe int Hook_QC_StartFunction(IntPtr function)
         {
@@ -165,6 +164,44 @@ namespace QuakePlugins
             _hook_sv_spawnServer.OriginalFunction(arg1);
         }
 
+        private static unsafe void OnPR_LoadProgs()
+        {
+            _hook_pr_loadProgs.OriginalFunction();
+
+            try
+            {
+                var builtins = QEngine.BuiltinsGetOriginal();
+
+                // Hook custom builtins
+                foreach (var addon in Program._addonsManager.Addons)
+                {
+                    if (addon.Builtins.CustomBuiltins != null)
+                    {
+                        foreach (var customBuiltin in addon.Builtins.CustomBuiltins)
+                        {
+                            var function = QEngine.QCGetFunctionByName(customBuiltin.Item1);
+
+                            if (function != null)
+                            {
+
+                            }
+                        }
+                    }
+                }
+
+
+                
+                var newBuiltins = Marshal.AllocHGlobal(sizeof(void*) * builtins.Length);
+                Marshal.Copy(builtins, 0, newBuiltins, builtins.Length);
+
+                QEngine.BuiltinsSetPointer(newBuiltins);
+            }
+            catch(Exception ex)
+            {
+                Quake.PrintConsole($"QuakePlugins unhandled exception: {ex}\n", Color.Red);
+            }
+        }
+
         private static IntPtr _customGamemodeNamePtr;
         private static string _customGamemodeName;
         private static unsafe IntPtr OnGetPlayfabGameModeName()
@@ -265,6 +302,7 @@ namespace QuakePlugins
             */
 
             _hook_sv_spawnServer = ReloadedHooks.Instance.CreateHook<SV_SpawnServer>(OnSV_SpawnServer, Offsets.GetOffsetLong("SV_SpawnServer")).Activate();
+            _hook_pr_loadProgs = ReloadedHooks.Instance.CreateHook<PR_LoadProgs>(OnPR_LoadProgs, Offsets.GetOffsetLong("PR_LoadProgs")).Activate();
             /*
             _hook_printChat = ReloadedHooks.Instance.CreateHook<PrintChat>(OnPrintChat, QEngine.func_printChat ).Activate();
             _hook_ed_loadFromFile = ReloadedHooks.Instance.CreateHook<ED_LoadFromFile>(OnLoadEdictsFromFile, QEngine.func_ed_loadFromFile).Activate();

@@ -1,5 +1,6 @@
 ﻿using QuakePlugins.API;
 using QuakePlugins.API.LuaScripting;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace QuakePlugins.Addons
@@ -18,6 +19,7 @@ namespace QuakePlugins.Addons
 
         protected Hooks Hooks { get; private set; }
         protected Timers Timers { get; private set; }
+        public Builtins Builtins { get; private set; }
 
         internal void Initialize(string name, string path)
         {
@@ -26,6 +28,7 @@ namespace QuakePlugins.Addons
 
             Hooks = new Hooks();
             Timers = new Timers();
+            Builtins = new Builtins();
 
             OnInitialize();
         }

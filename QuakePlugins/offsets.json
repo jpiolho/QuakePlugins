@@ -1,11 +1,15 @@
 ﻿{
-  "RegisterCvar": "1400dc7e0",
+  "pr_builtin_end": "1409bf710",
+  "PR_LoadProgs": "1401cbf80",
   "PrintConsoleBuffer": "1409d8690",
-  "SV_SpawnServer": "1401f17e0",
-  "Builtins": "1409bea80",
-  "BuiltinsPointer": "140806cb8",
-  "CvarGet": "1400db770",
-  "LastCvar": "140fc8e80",
+  "pr_builtins": "140806cb8",
+  "ED_FindFunction": "1401c91a0",
+  "pr_functions": "1418cdbd0",
+  "CvarLast": "140fc8e80",
+  "CvarList": "149e29508",
   "PrintConsole": "1400d8df0",
-  "CvarList": "149e29508"
+  "SV_SpawnServer": "1401f17e0",
+  "CvarGet": "1400db770",
+  "pr_builtin": "1409bea80",
+  "CvarRegister": "1400dc7e0"
 } 

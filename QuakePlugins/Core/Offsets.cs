@@ -17,6 +17,8 @@ namespace QuakePlugins.Core
 
         public static nuint GetOffset(string name) => _offsets[name];
         public static long GetOffsetLong(string name) => (long)_offsets[name];
+        public static IntPtr GetOffsetPointer(string name) => new IntPtr(GetOffsetLong(name));
+        public static unsafe void* GetOffsetNativePointer(string name) => (void*)GetOffset(name);
 
         public static async Task LoadAsync(string root = "")
         {
