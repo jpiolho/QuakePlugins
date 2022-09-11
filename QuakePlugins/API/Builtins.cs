@@ -11,14 +11,33 @@ namespace QuakePlugins.API
     /// <apiglobal />
     public class Builtins
     {
-        public delegate void CustomBuiltinHandler();
-        private List<(string, CustomBuiltinHandler)> _customBuiltins = new List<(string, CustomBuiltinHandler)>();
+        internal class RegisteredBuiltin
+        {
+            public int Index { get; set; }
+            public string Name { get; set; }
+            public CustomBuiltinHandler Handler { get; set; }
+        }
 
-        internal IEnumerable<(string, CustomBuiltinHandler)> CustomBuiltins => _customBuiltins;
+        public const int Unspecified = -1;
+
+        public delegate void CustomBuiltinHandler();
+        private List<RegisteredBuiltin> _customBuiltins = new List<RegisteredBuiltin>();
+
+        internal IEnumerable<RegisteredBuiltin> CustomBuiltins => _customBuiltins;
 
         public void RegisterCustomBuiltin(string name, CustomBuiltinHandler function)
         {
-            _customBuiltins.Add((name, function));
+            RegisterCustomBuiltin(Unspecified, name, function);
+        }
+
+        public void RegisterCustomBuiltin(int index, string name, CustomBuiltinHandler function)
+        {
+            _customBuiltins.Add(new RegisteredBuiltin()
+            {
+                Index = index,
+                Name = name,
+                Handler = function
+            });
         }
 
 

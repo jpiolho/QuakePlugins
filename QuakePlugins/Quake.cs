@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
+using QuakePlugins.API;
 
 namespace QuakePlugins
 {
@@ -187,11 +188,21 @@ namespace QuakePlugins
                     {
                         foreach (var customBuiltin in addon.Builtins.CustomBuiltins)
                         {
-                            var ptr = Marshal.GetFunctionPointerForDelegate(customBuiltin.Item2);
-                            builtins.Add(ptr);
-                            var builtinId = -(builtins.Count-1);
+                            var ptr = Marshal.GetFunctionPointerForDelegate(customBuiltin.Handler);
 
-                            var function = QEngine.QCGetFunctionByName(customBuiltin.Item1);
+                            int builtinId = customBuiltin.Index;
+                            if (customBuiltin.Index == Builtins.Unspecified)
+                            {
+                                builtins.Add(ptr);
+                                builtinId = -(builtins.Count - 1);
+                            }
+                            else
+                            {
+                                builtins[builtinId] = ptr;
+                            }
+                            
+
+                            var function = QEngine.QCGetFunctionByName(customBuiltin.Name);
 
                             if (function != null)
                                 function->firstStatement = builtinId;
