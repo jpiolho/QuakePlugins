@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<Platforms>AnyCPU;x64</Platforms>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NLua" Version="1.6.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\QuakePlugins\QuakePlugins.csproj" />
+	</ItemGroup>
+
+</Project>

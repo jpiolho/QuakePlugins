@@ -1,15 +1,14 @@
-﻿using System;
+﻿using QuakePlugins.Plugins.Runtimes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QuakePlugins.Plugins
+namespace QuakePlugins.Plugins.Runtimes
 {
-    internal interface IPluginRuntime
+    public interface IPluginRuntime
     {
-        internal event EventHandler<Exception> UnhandledException;
-
-        internal void Load();
+        Task<Plugin> LoadAsync(string path,PluginInfo info);
     }
 }

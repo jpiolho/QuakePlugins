@@ -122,6 +122,11 @@ namespace QuakePlugins.API
             QEngine.QCSetStringValue((QEngine.QCValueOffset)location, value);
         }
 
+        public static void SetStringTemporary(Value location,string value)
+        {
+            QEngine.QCSetStringTemporaryValue((QEngine.QCValueOffset)location, value);
+        }
+
         public static void SetVector(Value location, Vector3 value)
         {
             QEngine.QCSetVectorValue((QEngine.QCValueOffset)location, value);

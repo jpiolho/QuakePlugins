@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuakePlugins.DocsGenerator"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginTest", "PluginTest\PluginTest.csproj", "{73CCC400-7E31-40CF-81AC-35C982F100D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuakePlugins.CSharpPluginTest", "QuakePlugins.CSharpPluginTest\QuakePlugins.CSharpPluginTest.csproj", "{2BE9892E-0795-4082-8723-8845A3EB8480}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuakePlugins.CSharpPluginTest", "QuakePlugins.CSharpPluginTest\QuakePlugins.CSharpPluginTest.csproj", "{2BE9892E-0795-4082-8723-8845A3EB8480}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuakePlugins.LuaRuntime", "QuakePlugins.LuaRuntime\QuakePlugins.LuaRuntime.csproj", "{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,12 +55,20 @@ Global
 		{73CCC400-7E31-40CF-81AC-35C982F100D7}.Release|x64.Build.0 = Release|Any CPU
 		{2BE9892E-0795-4082-8723-8845A3EB8480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2BE9892E-0795-4082-8723-8845A3EB8480}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2BE9892E-0795-4082-8723-8845A3EB8480}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2BE9892E-0795-4082-8723-8845A3EB8480}.Debug|x64.Build.0 = Debug|Any CPU
+		{2BE9892E-0795-4082-8723-8845A3EB8480}.Debug|x64.ActiveCfg = Debug|x64
+		{2BE9892E-0795-4082-8723-8845A3EB8480}.Debug|x64.Build.0 = Debug|x64
 		{2BE9892E-0795-4082-8723-8845A3EB8480}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BE9892E-0795-4082-8723-8845A3EB8480}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2BE9892E-0795-4082-8723-8845A3EB8480}.Release|x64.ActiveCfg = Release|Any CPU
 		{2BE9892E-0795-4082-8723-8845A3EB8480}.Release|x64.Build.0 = Release|Any CPU
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Debug|x64.ActiveCfg = Debug|x64
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Debug|x64.Build.0 = Debug|x64
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Release|x64.ActiveCfg = Release|Any CPU
+		{B96ABEEA-8CF4-4C72-AF59-AF18B137F526}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

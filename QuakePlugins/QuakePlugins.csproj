@@ -1,58 +1,79 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <Platforms>x64</Platforms>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<Platforms>x64</Platforms>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NLua" Version="1.6.0" />
-    <PackageReference Include="Reloaded.Hooks" Version="4.2.0" />
-    <PackageReference Include="Reloaded.Injector" Version="1.2.5" />
-    <PackageReference Include="Reloaded.Memory" Version="7.1.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Reloaded.Hooks" Version="4.2.0" />
+		<PackageReference Include="Reloaded.Injector" Version="1.2.5" />
+		<PackageReference Include="Reloaded.Memory" Version="7.1.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="QuakePluginsHook.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="QuakePluginsHook.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="API\CSharp\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="API\CSharp\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\QuakePluginsHook\QuakePluginsHook.vcxproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\QuakePluginsHook\QuakePluginsHook.vcxproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <NativeLibs Remove="Utils.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<NativeLibs Remove="Utils.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <NativeLibs Remove="offsets.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<NativeLibs Remove="offsets.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Remove="offsets.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="offsets.json" />
+		<None Remove="playfabclients.txt" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="offsets.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="offsets.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="playfabclients.txt" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <NativeLibs Remove="findOffsets.lua" />
-  </ItemGroup>
+	<ItemGroup>
+		<NativeLibs Remove="findOffsets.lua" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<NativeLibs Remove="playfabclients.txt" />
+	</ItemGroup>
+	
+	<PropertyGroup>
+		<NetHostDir>$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Host.$(NETCoreSdkRuntimeIdentifier)/$(BundledNETCoreAppPackageVersion)/runtimes/$(NETCoreSdkRuntimeIdentifier)/native</NetHostDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="$(NetHostDir)/comhost.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="$(NetHostDir)/ijwhost.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="$(NetHostDir)/nethost.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
 </Project>

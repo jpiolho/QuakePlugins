@@ -47,12 +47,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native;$(ProjectDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)external;C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Host.$(NETCoreSdkRuntimeIdentifier)/$(BundledNETCoreAppPackageVersion)/runtimes/$(NETCoreSdkRuntimeIdentifier)/native;$(ProjectDir)external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)external;$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Host.$(NETCoreSdkRuntimeIdentifier)/$(BundledNETCoreAppPackageVersion)/runtimes/$(NETCoreSdkRuntimeIdentifier)/native;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native;$(ProjectDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)external;C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Host.$(NETCoreSdkRuntimeIdentifier)/$(BundledNETCoreAppPackageVersion)/runtimes/$(NETCoreSdkRuntimeIdentifier)/native;$(ProjectDir)external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)external;$(NetCoreTargetingPackRoot)/Microsoft.NETCore.App.Host.$(NETCoreSdkRuntimeIdentifier)/$(BundledNETCoreAppPackageVersion)/runtimes/$(NETCoreSdkRuntimeIdentifier)/native;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

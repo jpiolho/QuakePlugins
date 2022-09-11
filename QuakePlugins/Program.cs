@@ -17,7 +17,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Console = QuakePlugins.API.Console;
+using Console = QuakePlugins.API.QConsole;
 
 namespace QuakePlugins
 {
@@ -94,9 +94,9 @@ namespace QuakePlugins
                 throw new Exception("Too many processes found");
 
             using var injector = new Injector(processes[0]);
-            var addr1 = injector.Inject(@"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native\comhost.dll");
-            var addr2 = injector.Inject(@"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native\ijwhost.dll");
-            var addr3 = injector.Inject(@"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\6.0.7\runtimes\win-x64\native\nethost.dll");
+            var addr1 = injector.Inject(@"comhost.dll");
+            var addr2 = injector.Inject(@"ijwhost.dll");
+            var addr3 = injector.Inject(@"nethost.dll");
 
             var dll = Path.Combine(AppContext.BaseDirectory, "QuakePluginsHook.dll");
             var addr4 = injector.Inject(dll);

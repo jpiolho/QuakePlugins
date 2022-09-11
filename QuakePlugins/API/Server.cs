@@ -43,6 +43,11 @@ namespace QuakePlugins.API
             }
         }
 
+        public static ServerClient GetClientByEdict(Edict edict)
+        {
+            return GetClient(edict.Index - 1);
+        }
+
         /// <summary>
         /// Gets a list of all clients in the server. Active or not.
         /// </summary>

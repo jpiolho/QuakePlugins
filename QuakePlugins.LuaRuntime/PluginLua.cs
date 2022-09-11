@@ -1,20 +1,20 @@
 ﻿using NLua;
 using NLua.Exceptions;
+using QuakePlugins.API;
 using QuakePlugins.API.LuaScripting;
-using System;
-using System.IO;
+using QuakePlugins.Plugins;
 using static QuakePlugins.API.LuaScripting.Hooks;
 
-namespace QuakePlugins.Plugins
+namespace QuakePlugins.LuaRuntime
 {
-    internal class PluginLua : Plugin
+    public class PluginLua : Plugin
     {
         private Lua _state;
 
         protected override void OnInitialize()
         {
             InitializeLua();
-            _state.DoFile(Path.Combine(FolderPath, "main.lua"));
+            _state.DoFile(Path.Combine(FolderPath, Info.Main));
         }
 
 
@@ -33,7 +33,7 @@ Vector3 = luanet.import_type('System.Numerics.Vector3')
 
 luanet.load_assembly('QuakePlugins','QuakePlugins.API')
 Game = luanet.import_type('QuakePlugins.API.Game')
-Console = luanet.import_type('QuakePlugins.API.Console')
+Console = luanet.import_type('QuakePlugins.API.QConsole')
 Cvars = luanet.import_type('QuakePlugins.API.Cvars')
 QC = luanet.import_type('QuakePlugins.API.QC')
 Server = luanet.import_type('QuakePlugins.API.Server')
@@ -55,33 +55,34 @@ Client = luanet.import_type('QuakePlugins.API.Client')
 Hooks.Handling = luanet.import_type('QuakePlugins.API.LuaScripting.Hooks+Handling')
 ");
 
+            /*
             _state.DoString("Timers = {}");
             _state["Timers.In"] = Timers.In;
             _state["Timers.At"] = Timers.At;
             _state["Timers.Stop"] = Timers.Stop;
-
+            */
 #pragma warning restore CS8974 // Converting method group to non-delegate type
         }
 
 
         private Handling LuaReturnToHandling(object[] returns) => returns.Length > 0 ? (Handling)returns[0] : Handling.Continue;
 
-        internal override Handling RaiseHook(string category, string name, params object[] args)
+        public override Handling RaiseHook(string category, string name, params object[] args)
         {
             try
             {
                 return base.RaiseHook(category, name, args);
             }
-            catch(LuaScriptException ex)
+            catch (LuaScriptException ex)
             {
-                Quake.PrintConsole($"[QuakePlugins] Unhandled Lua exception in addon '{Name}': {ex} | Line {ex.Source}\n", System.Drawing.Color.Red);
+                Quake.PrintConsole($"[QuakePlugins] Unhandled Lua exception in addon '{Info.Name}': {ex} | Line {ex.Source}\n", System.Drawing.Color.Red);
                 return Handling.Continue;
             }
         }
 
         private void LuaState_HookException(object sender, NLua.Event.HookExceptionEventArgs e)
         {
-            Quake.PrintConsole($"[QuakePlugins] Unhandled Lua exception in addon '{Name}': {e.Exception}\n", System.Drawing.Color.Red);
+            Quake.PrintConsole($"[QuakePlugins] Unhandled Lua exception in addon '{Info.Name}': {e.Exception}\n", System.Drawing.Color.Red);
         }
     }
 }

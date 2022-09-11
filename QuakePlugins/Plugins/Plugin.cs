@@ -7,24 +7,18 @@ namespace QuakePlugins.Plugins
 {
     public abstract class Plugin
     {
-        /// <summary>
-        /// Full path to the plugin folder
-        /// </summary>
         public string FolderPath { get; private set; }
-        /// <summary>
-        /// The name of the plugin
-        /// </summary>
-        public string Name { get; private set; }
-
+        public PluginInfo Info { get; private set; }
 
         protected Hooks Hooks { get; private set; }
         protected Timers Timers { get; private set; }
         public Builtins Builtins { get; private set; }
 
-        internal void Initialize(string name, string path)
+
+        internal void Initialize(string path,PluginInfo info)
         {
-            Name = name;
             FolderPath = path;
+            Info = info;
 
             Hooks = new Hooks();
             Timers = new Timers();
@@ -32,6 +26,9 @@ namespace QuakePlugins.Plugins
 
             OnInitialize();
         }
+
+        public virtual void OnRuntimeInitialize() { }
+        public virtual void OnRuntimeDestroy() { }
 
         protected virtual void OnInitialize() { }
         protected virtual void OnLoad() { }
@@ -46,7 +43,7 @@ namespace QuakePlugins.Plugins
         internal void RaiseOnDestroy() => OnDestroy();
 
 
-        internal virtual Hooks.Handling RaiseHook(string category, string name, params object[] args)
+        public virtual Hooks.Handling RaiseHook(string category, string name, params object[] args)
         {
             return Hooks.RaiseHooks(category, name, args);
         }

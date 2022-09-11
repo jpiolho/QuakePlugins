@@ -1,21 +1,17 @@
-﻿using NLua;
-using QuakePlugins.Engine;
-using System;
+﻿using QuakePlugins.Engine;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QuakePlugins.API
 {
     /// <apiglobal />
     public class Timers
     {
+        /*
         private List<(float time, LuaFunction func, object[] args)?> _luaFunctions;
 
         internal Timers()
         {
-            _luaFunctions = new List<(float time,LuaFunction func, object[] args)?>();
+            _luaFunctions = new List<(float time, LuaFunction func, object[] args)?>();
         }
 
         /// <summary>
@@ -42,15 +38,15 @@ namespace QuakePlugins.API
         /// </summary>
         public void Stop(int id)
         {
-            if(id > 0 && id < _luaFunctions.Count)
+            if (id > 0 && id < _luaFunctions.Count)
                 _luaFunctions[id] = null;
         }
 
-        private int AddTimer((float,LuaFunction,object[]) timer)
+        private int AddTimer((float, LuaFunction, object[]) timer)
         {
-            for(var i=0;i<_luaFunctions.Count;i++)
+            for (var i = 0; i < _luaFunctions.Count; i++)
             {
-                if(!_luaFunctions[i].HasValue)
+                if (!_luaFunctions[i].HasValue)
                 {
                     _luaFunctions[i] = timer;
                     return i;
@@ -75,7 +71,7 @@ namespace QuakePlugins.API
                         timer.Value.func.Call(timer.Value.args);
                         _luaFunctions[i] = null;
                     }
-                        
+
                 }
             }
         }
@@ -84,5 +80,8 @@ namespace QuakePlugins.API
         {
             return QEngine.GetGlobals()->time + relativeTime;
         }
+        */
+
+        internal void Tick() { }
     }
 }

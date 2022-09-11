@@ -12,7 +12,7 @@ namespace QuakePlugins.API
     public class Builtins
     {
         public delegate void CustomBuiltinHandler();
-        private List<(string, CustomBuiltinHandler)> _customBuiltins;
+        private List<(string, CustomBuiltinHandler)> _customBuiltins = new List<(string, CustomBuiltinHandler)>();
 
         internal IEnumerable<(string, CustomBuiltinHandler)> CustomBuiltins => _customBuiltins;
 

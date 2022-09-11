@@ -6,10 +6,12 @@ using Reloaded.Hooks.Definitions.X64;
 using Reloaded.Memory.Sources;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Void = Reloaded.Hooks.Definitions.Structs.Void;
 
@@ -17,13 +19,13 @@ namespace QuakePlugins.Engine
 {
     internal class QEngine
     {
-        internal const long func_enterFunc = 0x1401cb660;
-        internal const long func_printChat = 0x1402a3a50;
-        internal const long func_ed_loadFromFile = 0x1401c9a30;
-        internal const long func_getPlayfabGamemode = 0x14037d420;
-        internal const long hook_leaveFunc = 0x1401cc024;
-        internal const long var_executingFunction = 0x1418c1160;
-        internal const long func_r_newMap = 0x1403221e0;
+        internal static long func_enterFunc;
+        internal static long func_printChat = 0; //0x1402a3a50;
+        internal static long func_ed_loadFromFile = 0; //0x1401c9a30;
+        internal static long func_getPlayfabGamemode = 0; //0x14037d420;
+        internal static long hook_leaveFunc = 0; //0x1401cc024;
+        internal static long var_executingFunction = 0; //0x1418c1160;
+        internal static long func_r_newMap = 0; //0x1403221e0;
 
         private static IntPtr _pr_globals;
         private static IntPtr _pr_builtins;
@@ -36,6 +38,10 @@ namespace QuakePlugins.Engine
         private static unsafe EngineQCFunction** _pr_functions;
         private static unsafe void* _client_worldmodel;
         private static unsafe EngineQCStatement** _pr_statements;
+        private static unsafe EnginePlayfabClient** _g_playfabClients;
+        private static unsafe long* _gTemporaryStringCounter;
+        private static unsafe int* _gTemporaryStringMax;
+        private static unsafe void** _gTemporaryStringBase;
 
 
         private static Stack<(byte[],int)> _stack;
@@ -45,19 +51,23 @@ namespace QuakePlugins.Engine
         {
             _stack = new Stack<(byte[],int)>(); // new byte[112];
 
+
+            func_enterFunc = Offsets.GetOffsetLong("PR_EnterFunction");
+
+
             var hooks = ReloadedHooks.Instance;
             _consolePrint = hooks.CreateWrapper<FnConsolePrint>(Offsets.GetOffsetLong("PrintConsole"), out _);
             _cvarRegister = hooks.CreateWrapper<FnCvarRegister>(Offsets.GetOffsetLong("CvarRegister"), out _);
             _cvarGet = hooks.CreateWrapper<FnCvarGet>(Offsets.GetOffsetLong("CvarGet"), out _);
             _qcFindFunction = hooks.CreateWrapper<FnQCFindFunction>(Offsets.GetOffsetLong("ED_FindFunction"), out _);
+            _stringGet = hooks.CreateWrapper<FnStringGet>(Offsets.GetOffsetLong("GetPRString"), out _);
+            _qcExecuteProgram = hooks.CreateWrapper<FnQCExecuteProgram>(Offsets.GetOffsetLong("PR_ExecuteProgram"), out _);
+            _edictGetField = hooks.CreateWrapper<FnEdictGetField>(Offsets.GetOffsetLong("ED_FindField"), out _);
+            _stringCreate = hooks.CreateWrapper<FnStringCreate>(Offsets.GetOffsetLong("CreateEngineString"), out _);
 
             /*
             _cvarGetFloatValue = hooks.CreateWrapper<FnCvarGetFloatValue>(0x1400dc770, out _);
-            _stringGet = hooks.CreateWrapper<FnStringGet>(0x1401c66c0, out _);
-            _stringCreate = hooks.CreateWrapper<FnStringCreate>(0x1401c6730, out _);
             _gameGetGamemodeName = hooks.CreateWrapper<FnGameGetGamemodeName>(0x1401c6730, out _); // TODO: Fix
-            _qcExecuteProgram = hooks.CreateWrapper<FnQCExecuteProgram>(0x1401cb7a0, out _);
-            _edictGetField = hooks.CreateWrapper<FnEdictGetField>(0x1401c6c10, out _);
             */
 
             unsafe
@@ -65,15 +75,19 @@ namespace QuakePlugins.Engine
                 _pr_functions = (EngineQCFunction**)Offsets.GetOffsetLong("pr_functions");
                 _pr_builtins = Offsets.GetOffsetPointer("pr_builtins");
                 _pr_builtin = new IntPtr(*(void**)_pr_builtins);
+                _pr_globals = Offsets.GetOffsetPointer("pr_globals");
+                _pr_edict_size = (uint*)Offsets.GetOffsetNativePointer("pr_edict_size");
+                _pr_statements = (EngineQCStatement**)Offsets.GetOffsetNativePointer("pr_statements");
+                _pr_argc = (int*)Offsets.GetOffsetNativePointer("pr_argc");
+                _sv_edicts = (EngineEdict**)Offsets.GetOffsetNativePointer("sv_edicts");
+                _serverStatic = (EngineServerStatic*)Offsets.GetOffsetNativePointer("svs");
+                _g_playfabClients = (EnginePlayfabClient**)Offsets.GetOffsetNativePointer("gPlayfabClients");
+                _gTemporaryStringCounter = (long*)Offsets.GetOffsetNativePointer("gTemporaryStringCounter");
+                _gTemporaryStringMax = (int*)Offsets.GetOffsetNativePointer("gTemporaryStringMax");
+                _gTemporaryStringBase = (void**)Offsets.GetOffsetNativePointer("gTemporaryStringBase");
                 /*
                 _g_gamedir = (char***)0x140e58b18;
-                _pr_globals = new IntPtr(0x1418bef20);
-                _pr_argc = (int*)0x1418bef5c;
-                _sv_edicts = (EngineEdict**)0x1418db3d0;
-                _pr_edict_size = (uint*)0x1418bef18;
-                _serverStatic = (EngineServerStatic*)0x141a7d280;
                 _client_worldmodel = (void*)0x149dcc438;
-                _pr_statements = (EngineQCStatement**)0x1418bef38;
                 */
             }
             
@@ -147,6 +161,12 @@ namespace QuakePlugins.Engine
         {
             QCSetIntValue(offset, StringCreate(value));
         }
+
+        public static void QCSetStringTemporaryValue(QCValueOffset offset, string value)
+        {
+            QCSetIntValue(offset, StringCreateTemporary(value));
+        }
+
         public static void QCSetVectorValue(QCValueOffset offset, Vector3 value)
         {
             unsafe
@@ -489,6 +509,25 @@ namespace QuakePlugins.Engine
         }
 
 
+        public static int StringCreateTemporary(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return 0;
+
+            unsafe
+            {
+                var tempId = *(_gTemporaryStringCounter)++;
+                tempId %= (*_gTemporaryStringMax) + 1;
+
+                var bytes = Encoding.UTF8.GetBytes(text);
+                var ptr = new IntPtr((char*)*_gTemporaryStringBase + (0x400 * tempId));
+                Marshal.Copy(bytes, 0, ptr, Math.Min(bytes.Length,0x400));
+
+                return _stringCreate.Value.Invoke(ptr, ptr);
+            }
+        }
+
+
 
         [Function(CallingConventions.Microsoft)]
         private struct FnGameGetGamemodeName { public FuncPtr<IntPtr> Value; }
@@ -511,6 +550,52 @@ namespace QuakePlugins.Engine
         public static unsafe EngineQCStatement* QCGetStatement(int index)
         {
             return &(*_pr_statements)[index];
+        }
+
+
+        public static unsafe List<IntPtr> GetPlayfabClients()
+        {
+            var list = new List<IntPtr>();
+            var client = *_g_playfabClients;
+            var nullClient = client;
+            
+            client = client->ptr1;
+            while (client != nullClient)
+            {
+                list.Add(new IntPtr(client));
+
+                var var2 = client->ptr3;
+                if(!var2->bool2)
+                {
+                    var var1 = var2->ptr1->bool2;
+                    client = var2;
+                    var2 = var2->ptr1;
+
+                    while(!var1)
+                    {
+                        var1 = var2->ptr1->bool2;
+                        client = var2;
+                        var2 = var2->ptr1;
+                    }
+                }
+                else
+                {
+                    var var1 = client->ptr2->bool2;
+                    var var4 = client->ptr2;
+                    var2 = client;
+
+                    client = var4;
+                    while(!var1 && var2 == client->ptr3)
+                    {
+                        var1 = client->ptr2->bool2;
+                        var4 = client->ptr2;
+                        var2 = client;
+                        client = var4;
+                    }
+                }
+            }
+
+            return list;
         }
     }
 }

@@ -5,7 +5,11 @@ using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X64;
 using Reloaded.Hooks.Tools;
+using Reloaded.Assembler.Definitions;
+using Reloaded.Assembler;
+using Reloaded.Assembler.Kernel32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -46,12 +50,16 @@ namespace QuakePlugins
         [Function(CallingConventions.Microsoft)] public delegate void PR_LoadProgs();
         internal static IHook<PR_LoadProgs> _hook_pr_loadProgs;
 
+
+        internal static IAsmHook _builtin_fix_hook;
+        internal static IAsmHook _builtin_call_hook;
+
         private static unsafe int Hook_QC_StartFunction(IntPtr function)
         {
             int nameIndex = *(int*)(function + 16);
 
             var functionName = QEngine.StringGet(nameIndex);
-
+            
             if(functionName == "StartFrame")
             {
                 foreach (var addon in Program._addonsManager.Addons)
@@ -170,7 +178,7 @@ namespace QuakePlugins
 
             try
             {
-                var builtins = QEngine.BuiltinsGetOriginal();
+                var builtins = new List<IntPtr>(QEngine.BuiltinsGetOriginal());
 
                 // Hook custom builtins
                 foreach (var addon in Program._addonsManager.Addons)
@@ -179,22 +187,42 @@ namespace QuakePlugins
                     {
                         foreach (var customBuiltin in addon.Builtins.CustomBuiltins)
                         {
+                            var ptr = Marshal.GetFunctionPointerForDelegate(customBuiltin.Item2);
+                            builtins.Add(ptr);
+                            var builtinId = -(builtins.Count-1);
+
                             var function = QEngine.QCGetFunctionByName(customBuiltin.Item1);
 
                             if (function != null)
-                            {
-
-                            }
+                                function->firstStatement = builtinId;
                         }
                     }
                 }
 
+                _builtin_fix_hook?.Disable();
+                _builtin_fix_hook = new AsmHook(new string[]
+                {
+                    $"use64",
+                    $"neg ebx",
+                    $"cmp ebx,0x{builtins.Count:X2}"
+                }, Offsets.GetOffset("builtins_idCheck"), Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.DoNotExecuteOriginal).Activate();
 
-                
-                var newBuiltins = Marshal.AllocHGlobal(sizeof(void*) * builtins.Length);
-                Marshal.Copy(builtins, 0, newBuiltins, builtins.Length);
+
+                var newBuiltins = Marshal.AllocHGlobal(sizeof(void*) * builtins.Count);
+                Marshal.Copy(builtins.ToArray(), 0, newBuiltins, builtins.Count);
 
                 QEngine.BuiltinsSetPointer(newBuiltins);
+                
+                
+                _builtin_call_hook?.Disable();
+                _builtin_call_hook = new AsmHook(new string[]
+                {
+                    $"use64",
+                    $"mov rcx,0x{newBuiltins:X}",
+                    $"mov rcx,[rcx + rax*8]",
+                    $"call rcx"
+                }, Offsets.GetOffset("builtins_call"), Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.DoNotExecuteOriginal).Activate();
+
             }
             catch(Exception ex)
             {
@@ -285,9 +313,9 @@ namespace QuakePlugins
 
         public static unsafe void SetupHooks()
         {
-            /*
             _hook_pr_enterFunctionHook = ReloadedHooks.Instance.CreateHook<PR_EnterFunction>(Hook_QC_StartFunction, QEngine.func_enterFunc).Activate();
 
+            /*
             _pr_leaveFunctionHook = new AsmHook(new string[]
             {
                 $"use64",
@@ -301,6 +329,7 @@ namespace QuakePlugins
             }, (nuint)QEngine.hook_leaveFunc, Reloaded.Hooks.Definitions.Enums.AsmHookBehaviour.ExecuteAfter).Activate();
             */
 
+            
             _hook_sv_spawnServer = ReloadedHooks.Instance.CreateHook<SV_SpawnServer>(OnSV_SpawnServer, Offsets.GetOffsetLong("SV_SpawnServer")).Activate();
             _hook_pr_loadProgs = ReloadedHooks.Instance.CreateHook<PR_LoadProgs>(OnPR_LoadProgs, Offsets.GetOffsetLong("PR_LoadProgs")).Activate();
             /*

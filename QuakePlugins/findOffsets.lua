@@ -1,4 +1,9 @@
-﻿local moduleStart = getAddress("quake_x64_steam.exe");
+﻿-- Script for Cheat Engine to find offsets
+--
+-- Make sure you have this plugin enabled: https://forum.cheatengine.org/viewtopic.php?t=587401
+-- Copy & paste this into the lua script window and run it
+
+local moduleStart = getAddress("quake_x64_steam.exe");
 local moduleEnd = moduleStart + getModuleSize("quake_x64_steam.exe");
 
 function toHex(hex) return string.format("%x", hex) end
@@ -230,6 +235,139 @@ offsets.pr_builtin_end = executeOffsetSearch("pr_builtin_end",function()
 
     _, _, count = string.find(getOpCodeAt(count),"^CMP %a%a%a?,(%x+)");
     return offsets.pr_builtin + (tonumber(count,16) * 8);
+end);
+
+offsets.pr_edict_size = executeOffsetSearch("pr_edict_size",function()
+    local base = findPattern("base","45xxxxxx49xxxx49xxxx89xxxxxxxxxx33xx4Cxxxxxxxxxxxx4Cxxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx45xxxx");
+
+    base = skipInstructionsUntil(base,function(opcode)
+        return string.match(opcode,"^MOV %[%x+%],EAX")
+    end);
+
+    _, _, base = string.find(getOpCodeAt(base),"^MOV %[(%x+)%],EAX");
+    return tonumber(base,16);
+end);
+
+offsets.pr_edict_size = executeOffsetSearch("pr_edict_size",function()
+    local base = findPattern("base","45xxxxxx49xxxx49xxxx89xxxxxxxxxx33xx4Cxxxxxxxxxxxx4Cxxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx45xxxx");
+
+    base = skipInstructions(base,3)
+
+    _, _, base = string.find(getOpCodeAt(base),"^MOV %[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.pr_statements = executeOffsetSearch("pr_statements",function()
+    local base = findPattern("base","45xxxxxx49xxxx49xxxx89xxxxxxxxxx33xx4Cxxxxxxxxxxxx4Cxxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx45xxxx");
+
+    base = skipInstructions(base,7)
+
+    _, _, base = string.find(getOpCodeAt(base),"^MOV %[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.pr_globals = executeOffsetSearch("pr_globals",function()
+    local base = findPattern("base","45xxxxxx49xxxx49xxxx89xxxxxxxxxx33xx4Cxxxxxxxxxxxx4Cxxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx45xxxx");
+
+    base = skipInstructions(base,9)
+
+    _, _, base = string.find(getOpCodeAt(base),"^MOV %[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.pr_argc = executeOffsetSearch("pr_argc",function()
+    local base = findPattern("base","8Dxxxx89xxxxxxxxxx8Bxxxx85xx75xx48xxxxxxxxxxxxE8xxxxxxxx8Bxxxx");
+
+    base = skipInstructions(base,1);
+
+    _, _, base = string.find(getOpCodeAt(base),"^MOV %[(%x+)%]");
+    return tonumber(base, 16);
+end);
+
+offsets.PR_ExecuteProgram = executeOffsetSearch("PR_ExecuteProgram",function()
+    return findPattern("function","48xxxxxxxx48xxxxxxxx48xxxxxxxxxx41xx41xx41xx41xx48xxxxxx0F29xxxxxx48xxxx85xx74xx48xxxxxxxxxxxx3Bxxxx7Cxx48xxxxxxxxxxxx48xxxxxx85xx74xx");
+end);
+
+offsets.PR_EnterFunction = executeOffsetSearch("PR_EnterFunction",function()
+    return findPattern("function","48xxxxxxxx48xxxxxxxxxx48xxxxxx4Cxxxxxxxxxxxx48xxxxxxxxxxxx8Bxxxxxxxxxx49xxxx48xxxx41xxxx44xxxxxxxxxxxx48xxxx");
+end);
+
+offsets.GetPRString = executeOffsetSearch("GetPRString",function()
+    return findPattern("function","48xxxxxx48xxxx85xx78xx48xxxxxxxxxxxx33xx48xxxxxxxxxxxx48xxxxxxEBxx83xxxx48xxxxxxxxxxxx48xxxxxx48xxxx74xx");
+end);
+
+offsets.ED_FindField = executeOffsetSearch("ED_FindField",function()
+    local base = findPattern("base","48xxxxE8xxxxxxxx48xxxx75xx48xxxxxxxxxxxxxx4Cxxxxxxxxxxxx48xxxxxxxx48xxxxxxxx");
+
+    base = skipInstructions(base,1);
+
+    _, _, base = string.find(getOpCodeAt(base),"^CALL (%x+)");
+    return tonumber(base,16);
+end);
+
+offsets.sv_edicts = executeOffsetSearch("sv_edicts",function()
+    local base = findPattern("","48xxxxxxxxxxxx48xxxxxx48xxxx48xxxx75xx83xxxxxxxxxxxx75xx");
+
+    _, _, base = string.find(getOpCodeAt(base),"^MOV %a%a%a,%[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.svs = executeOffsetSearch("svs",function()
+    local base = findPattern("","C7xxxxxxxxxxxxxxxxxxE8xxxxxxxxBDxxxxxxxx4Cxxxx41xxxxxxxxxx44xxxxxx44xxxx");
+
+    _,_, base = string.find(getOpCodeAt(base),"^MOV %[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.gPlayfabClients = executeOffsetSearch("gPlayfabClients",function()
+    local base = findPattern("","48xxxxxxxxxxxx48xxxxxx4Cxxxxxxxx4Cxxxxxxxx80xxxxxx0F85xxxxxxxx4Cxxxxxxxx0F1Fxxxxxxxxxxxx48xxxxxxxx49xxxxxx49xxxxxx48xxxxxx48xxxxxxxx");
+
+    _,_, base = string.find(getOpCodeAt(base),"^MOV %a%a%a,%[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.CreateEngineString = executeOffsetSearch("CreateEngineString",function()
+    return findPattern("","40xx48xxxxxx48xxxxxxxxxxxx48xxxx48xxxx72xx48xxxxxxxxxxxx73xx2Bxx8Bxx48xxxxxxxxxx0FB6xx");
+end);
+
+offsets.gTemporaryStringCounter = executeOffsetSearch("gTemporaryStringCounter",function()
+    local base = findPattern("","8Bxxxxxxxxxx8Dxxxx23xxxxxxxxxx3Bxxxxxxxxxx89xxxxxxxxxx72xx41xxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxxE8xxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxx48xxxxxxxxxxxx");
+
+    _,_,base = string.find(getOpCodeAt(base),"^MOV EBX,%[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.gTemporaryStringMax = executeOffsetSearch("gTemporaryStringMax",function()
+    local base = findPattern("","8Bxxxxxxxxxx8Dxxxx23xxxxxxxxxx3Bxxxxxxxxxx89xxxxxxxxxx72xx41xxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxxE8xxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxx48xxxxxxxxxxxx");
+
+    base = skipInstructions(base,2);
+
+    _,_,base = string.find(getOpCodeAt(base),"^AND EBX,%[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+offsets.gTemporaryStringBase = executeOffsetSearch("gTemporaryStringBase",function()
+    local base = findPattern("","8Bxxxxxxxxxx8Dxxxx23xxxxxxxxxx3Bxxxxxxxxxx89xxxxxxxxxx72xx41xxxxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxxE8xxxxxxxx48xxxxxxxxxxxx48xxxxxxxxxxxx48xxxxxx48xxxxxxxxxxxx");
+
+    base = skipInstructions(base,13);
+
+    _,_,base = string.find(getOpCodeAt(base),"^ADD RBX,%[(%x+)%]");
+    return tonumber(base,16);
+end);
+
+
+offsets.builtins_idCheck = executeOffsetSearch("builtins_idCheck",function()
+    return findPattern("","F7xx81xxxxxxxxxx7Cxx48xxxxxxxxxxxxE8xxxxxxxx48xxxx48xxxxxxxxxxxxFFxxxxxxxxxxxxE9xxxxxxxxE8xxxxxxxxE9xxxxxxxx83xxxxxxxxxxxx48xxxxxxxxxxxx");
+end);
+
+offsets.builtins_call = executeOffsetSearch("builtins_call",function()
+    local addr;
+
+    local base = offsets.builtins_idCheck;
+
+    base = skipInstructions(base,7);
+
+    return base;
 end);
 
 print(" ");

@@ -1,10 +1,4 @@
-﻿using NLua;
-using NLua.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace QuakePlugins.API.LuaScripting
 {
@@ -33,9 +27,9 @@ namespace QuakePlugins.API.LuaScripting
         }
 
 
-        private string GetHookID(string category,string name) => category + "|" + name;
+        private string GetHookID(string category, string name) => category + "|" + name;
 
-        private bool RegisterHook(string category,string name,HookCallback func)
+        private bool RegisterHook(string category, string name, HookCallback func)
         {
             var hookId = GetHookID(category, name);
 
@@ -44,7 +38,7 @@ namespace QuakePlugins.API.LuaScripting
                 _hooks[hookId] = hookList = new List<HookCallback>();
 
             // Prevent duplicate hooks
-            if(!hookList.Contains(func))
+            if (!hookList.Contains(func))
             {
                 hookList.Add(func);
                 return true;
@@ -53,7 +47,7 @@ namespace QuakePlugins.API.LuaScripting
             return false;
         }
 
-        private bool DeregisterHook(string category,string name, HookCallback func)
+        private bool DeregisterHook(string category, string name, HookCallback func)
         {
             var hookId = GetHookID(category, name);
 
@@ -73,7 +67,7 @@ namespace QuakePlugins.API.LuaScripting
         public bool Deregister(string name, HookCallback func) => DeregisterHook("Event", name, func);
 
 
-        internal Handling RaiseHooks(string category,string name,params object[] arguments)
+        internal Handling RaiseHooks(string category, string name, params object[] arguments)
         {
             var hookId = GetHookID(category, name);
             if (!_hooks.TryGetValue(hookId, out var hookList))

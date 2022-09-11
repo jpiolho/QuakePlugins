@@ -1,4 +1,5 @@
-﻿using QuakePlugins.Engine.Types;
+﻿using QuakePlugins.Engine;
+using QuakePlugins.Engine.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,6 +59,26 @@ namespace QuakePlugins.API
                     return Marshal.PtrToStringAnsi(new IntPtr(_client->name));
                 }
             }
+        }
+
+
+        public PlayfabClient GetPlayfabClient()
+        {
+            unsafe
+            {
+                var myName = Name;
+
+                foreach(var client in QEngine.GetPlayfabClients())
+                {
+                    var ptr = (EnginePlayfabClient*)client;
+                    var name = Marshal.PtrToStringUTF8(ptr->name, (int)ptr->nameLength);
+
+                    if (name == myName)
+                        return new PlayfabClient(ptr);
+                }
+            }
+
+            return null;
         }
     }
 }
