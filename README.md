@@ -1,7 +1,7 @@
 # QuakePlugins
 An engine mod for Quake Enhanced that adds plugin/scripting capabilities via C# and Lua.
 
-**This is a work in progress and is not ready for general use. The code is extremely messy at the moment since right now it's trying to be a proof of concept**
+### **QuakePlugins is no longer in development and being superceded by [QuakeReloaded](https://github.com/jpiolho/QuakeReloaded) and [Reloaded-II](https://github.com/Reloaded-Project/Reloaded-II)**
 
 Plugins repo: [QuakePlugins.Plugins](https://github.com/jpiolho/QuakePlugins.Plugins)
 
